@@ -65,6 +65,6 @@ Thumbs.db
 next-env.d.ts
 
 # ==============================
-# Windows special files
+# Windows reserved name
 # ==============================
 NUL
