@@ -101,8 +101,22 @@ export default function WardrobePage() {
   };
 
   useEffect(() => {
-    setList(getWardrobe());
+    // 옷장 데이터를 가져오는 비동기 함수
+    const fetchWardrobe = async () => {
+      try {
+        const wardrobeList = await getWardrobe(); // 백엔드 API 호출
+        setList(wardrobeList); // 가져온 데이터를 'list' 상태에 저장
+        console.log(wardrobeList)
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+    fetchWardrobe();
   }, []);
+
+  // useEffect(() => {
+  //   setList(getWardrobe());
+  // }, []);
 
   // 삭제 핸들러
   const handleDelete = (id) => {
@@ -222,19 +236,6 @@ export default function WardrobePage() {
                         ))}
                       </div>
                     )}
-                  </div>
-
-                  {/* 이미지 URL (선택) */}
-                  <div className="grid gap-2">
-                    <Label className="text-[#0B64FE]">이미지 URL (선택)</Label>
-                    <Input
-                      value={form.imageUrl}
-                      onChange={(e) =>
-                        handleInputChange("imageUrl", e.target.value)
-                      }
-                      placeholder="https://... (파일을 첨부하면 파일이 우선)"
-                      className="bg-white dark:bg-neutral-800"
-                    />
                   </div>
 
                   <div className="grid gap-2">
