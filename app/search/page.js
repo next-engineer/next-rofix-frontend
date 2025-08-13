@@ -161,7 +161,7 @@ export default function SearchPage() {
       const searchParams = {
         searchText: query.trim(),
         searchScope: "both", // 제목과 설명 모두 검색
-        category: category && category !== "all" ? category : "",
+        weather: category && category !== "all" ? category : "",
         sortBy: order === "likes" ? "likes" : "latest"
       };
 
