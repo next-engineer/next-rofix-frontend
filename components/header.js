@@ -5,33 +5,39 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
+import useAuth from "@/hooks/useAuth"; 
 
-// 저장된 사용자만 읽기 / 로그아웃
-import { getUser, logoutUser } from "@/lib/storage";
+/* =======================================
+ * 로컬 스토리지용 커스텀 훅 + 테마 토글 
+ * ======================================= */
 
-/* =========================
- * simple localStorage hook (for theme)
- * ========================= */
 function useLocalStorage(key, initialValue) {
-  const [value, setValue] = useState(undefined);
+  // SSR 환경에서 window 객체에 접근하지 않도록 안전하게 처리
+  const [storedValue, setStoredValue] = useState(initialValue);
 
   useEffect(() => {
     try {
-      const v = window.localStorage.getItem(key);
-      setValue(v ? JSON.parse(v) : initialValue);
-    } catch {
-      setValue(initialValue);
+      const item = window.localStorage.getItem(key);
+      if (item) {
+        setStoredValue(JSON.parse(item));
+      }
+    } catch (error) {
+      console.error("로컬 스토리지 읽기 실패:", error);
     }
   }, [key]);
 
-  useEffect(() => {
-    if (value === undefined) return;
+  const setValue = (value) => {
     try {
-      window.localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
-  }, [key, value]);
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error("로컬 스토리지 쓰기 실패:", error);
+    }
+  };
 
-  return [value, setValue];
+  return [storedValue, setValue];
 }
 
 function ThemeToggle() {
@@ -39,8 +45,11 @@ function ThemeToggle() {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
   }, [theme]);
 
   return (
@@ -55,21 +64,19 @@ function ThemeToggle() {
   );
 }
 
+/* =======================================
+ * 세션 상태를 확인하는 커스텀 훅 
+ * ======================================= */
+
 export default function Header() {
   const router = useRouter();
-  const [user, setUserState] = useState(null);
+  const { user, isLoading, logout } = useAuth(); 
 
-  // 저장된 사용자만 읽기 (자동 생성 없음)
-  useEffect(() => {
-    setUserState(getUser());
-  }, []);
-
-  const onLogout = () => {
-    logoutUser();
-    setUserState(null);
-    router.push("/");
-    router.refresh();
+  const onLogout = async () => {
+    await logout();    // logout 함수 내부에서 user 상태 null 처리 필요
+    router.replace("/");
   };
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
@@ -111,12 +118,16 @@ export default function Header() {
           {/* Right: Theme + Auth */}
           <div className="ml-auto flex items-center gap-2 justify-end">
             <ThemeToggle />
-
-            {user ? (
+            {isLoading ? (
+              // 로딩 중일 때 표시
+              <div className="h-8 w-[150px] flex items-center justify-center rounded-md border border-neutral-200 dark:border-neutral-700 animate-pulse bg-neutral-100 dark:bg-neutral-800">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-200"></div>
+              </div>
+            ) : user ? (
               <div className="flex items-center gap-2">
-                <Link href="/mypage">
-                  <Button className="h-8 px-3 rounded-md bg-[#0B64FE] text-white hover:bg-[#0956da]">
-                    마이페이지
+                <Link href="/mypage" passHref>
+                  <Button asChild className="h-8 px-3 rounded-md bg-[#0B64FE] text-white hover:bg-[#0956da]">
+                    <span>마이페이지</span>
                   </Button>
                 </Link>
                 <Button onClick={onLogout} variant="outline" className="h-8 px-3 rounded-md">
@@ -125,10 +136,9 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                {/* ✅ 회원가입 버튼 제거, 로그인만 남김 → /signup 으로 이동 */}
-                <Link href="/signup">
-                  <Button className="h-8 px-3 rounded-md bg-[#0B64FE] text-white hover:bg-[#0956da]">
-                    로그인
+                <Link href="/login" passHref>
+                  <Button asChild className="h-8 px-3 rounded-md bg-[#0B64FE] text-white hover:bg-[#0956da]">
+                    <span>로그인</span>
                   </Button>
                 </Link>
               </div>
