@@ -3,32 +3,17 @@
 import dynamic from "next/dynamic";
 const Header = dynamic(() => import("@/components/header"), { ssr: false });
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import useAuth from "@/hooks/useAuth";
 
-// storage 헬퍼 사용
-import { signUpWithEmail, getUser } from "@/lib/storage";
-
-export default function SignUpPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const router = useRouter();
+  const { login, isLoading } = useAuth();
 
-  // 유효한 로그인만 접근 차단, 예전 게스트는 정리
-  useEffect(() => {
-    try {
-      const u = getUser();
-      if (u && typeof u.email === "string" && u.email.includes("@")) {
-        router.replace("/");
-      } else if (u && (!u.email || !u.email.includes("@"))) {
-        localStorage.removeItem("fitspot_user"); // 게스트 값 정리
-      }
-    } catch {}
-  }, [router]);
-
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     const v = email.trim();
     if (!v || !v.includes("@")) {
@@ -36,11 +21,9 @@ export default function SignUpPage() {
       return;
     }
 
-    // 계정 없으면 생성, 있으면 덮어쓰기(로그인처럼 사용)
-    signUpWithEmail(v);
-
-    router.push("/");
-    router.refresh();
+    // useAuth 훅의 login 함수 호출
+    await login(v);
+    // login 함수 내부에서 성공시 /mypage 이동 처리됨
   };
 
   return (
@@ -63,17 +46,23 @@ export default function SignUpPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               <div className="flex items-center justify-center gap-2 mt-2">
-                <Button type="submit" className="h-9 px-4 rounded-md bg-[#4DA3FF] hover:bg-[#3E96F3] text-white">
-                  로그인
+                <Button
+                  type="submit"
+                  className="h-9 px-4 rounded-md bg-[#4DA3FF] hover:bg-[#3E96F3] text-white"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "처리 중..." : "로그인"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   className="h-9 px-4 rounded-md"
-                  onClick={() => router.back()}
+                  onClick={() => history.back()}
+                  disabled={isLoading}
                 >
                   닫기
                 </Button>

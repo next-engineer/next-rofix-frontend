@@ -73,40 +73,8 @@ export default function Header() {
   const { user, isLoading, logout } = useAuth(); 
 
   const onLogout = async () => {
-    await logout();
-    router.push("/");
-    router.refresh();
-  };
-
-  // 로그인 처리 함수: 이메일을 사용하여 백엔드 로그인 API를 호출
-  const handleLogin = async () => {
-    try {
-        // 예시 이메일. 실제로는 로그인 폼에서 입력값을 받아야 합니다.
-        const email = "testuser@example.com"; 
-        
-        const res = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email }),
-            credentials: 'include'
-        });
-
-        if (res.ok) {
-            // 로그인 성공 후, 다시 세션 상태를 확인하여 user 정보를 업데이트
-            const data = await res.json();
-            console.log("로그인 성공:", data);
-            // useAuth의 상태를 업데이트하는 로직이 필요.
-            // 여기서는 새로고침을 통해 useAuth 훅이 다시 실행되도록 처리할 수 있음.
-            // 또는 useAuth 훅에 로그인 성공 후 상태를 직접 업데이트하는 함수를 추가해야 함.
-            window.location.reload(); 
-        } else {
-            console.error("로그인 실패:", await res.text());
-        }
-    } catch (error) {
-        console.error("로그인 API 호출 실패:", error);
-    }
+    await logout();    // logout 함수 내부에서 user 상태 null 처리 필요
+    router.replace("/");
   };
 
 
@@ -168,8 +136,8 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/signup" passHref>
-                  <Button onClick={handleLogin} asChild className="h-8 px-3 rounded-md bg-[#0B64FE] text-white hover:bg-[#0956da]">
+                <Link href="/login" passHref>
+                  <Button asChild className="h-8 px-3 rounded-md bg-[#0B64FE] text-white hover:bg-[#0956da]">
                     <span>로그인</span>
                   </Button>
                 </Link>

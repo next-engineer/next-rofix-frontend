@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 /**
  *  로그인해야만 접근 가능한 경로를 여기에 추가합니다.
  *  @TODO 추후에 /mypage 추가 필요 */ 
-const PROTECTED_ROUTES = ['/wardrobe']; 
+const PROTECTED_ROUTES = ['/wardrobe', '/mypage']; 
 const AUTH_PAGES = ['/signup']; // 로그인/회원가입 페이지 경로
 
 export function middleware(request) {
@@ -55,5 +55,5 @@ export const config = {
   /**
    *  /api로 시작하는 모든 경로에 미들웨어를 적용
    *  @TODO 추후에 /mypage 추가 필요 */ 
-  matcher: ['/api/:path*', '/wardrobe'],
+  matcher: ['/api/:path*', '/wardrobe', '/mypage'],
 };
