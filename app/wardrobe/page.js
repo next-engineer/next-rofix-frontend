@@ -93,7 +93,8 @@ export default function WardrobePage() {
   // 옷장 데이터를 가져오는 비동기 함수
   const fetchWardrobe = async () => {
     try {
-      const wardrobeList = await ClothesManager.getWardrobeFromApi();
+      const wardrobeList = await ClothesManager.getWardrobeByIdFromApi();
+      console.log(wardrobeList);
       setList(wardrobeList);
     } catch (error) {
       alert(error.message);
@@ -347,7 +348,7 @@ export default function WardrobePage() {
                       <div className="relative w-full h-40 rounded-md overflow-hidden border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-700">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={i.image || fallbackImageFor(i.type)}
+                          src={i.imageUrl || fallbackImageFor(i.type)}
                           alt={i.name}
                           className="w-full h-40 object-cover"
                         />
