@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Search as SearchIcon, Trash2, Loader2 } from "lucide-react";
 import { getComments, addComment, deleteCommentById } from "@/lib/storage";
-import { searchCodies, getAvailableCategories, handleApiError } from "@/lib/api";
+import { searchCodies, getAvailableCategories, handleApiError } from "@/lib/cody-search";
 
 /* ===================== 데모 피드 ===================== */
 const demoFeed = [
