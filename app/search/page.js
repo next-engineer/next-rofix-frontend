@@ -20,14 +20,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Search as SearchIcon, Trash2, Loader2 } from "lucide-react";
 import { getComments, addComment, deleteCommentById } from "@/lib/storage";
-import { searchCodies, getAvailableCategories, handleApiError } from "@/lib/cody-search";
+import { searchCodies, handleApiError } from "@/lib/cody-search";
+
+// 고정 카테고리 배열
+const categories = [
+  { value: "all", label: "전체" },
+  { value: "spring", label: "봄" },
+  { value: "summer", label: "여름" },
+  { value: "autumn", label: "가을" },
+  { value: "winter", label: "겨울" },
+];
 
 /* ===================== 데모 피드 ===================== */
 const demoFeed = [
   {
     id: "p1",
     user: "mina",
-    caption: "여름엔 화이트 셔츠와 데님이 최고!",
+    caption: "여름에 화이트 셔츠 와 데님이 최고!",
     image: "/images/outfit-hot.png",
     category: "여름",
     likes: 12,
@@ -139,25 +148,9 @@ export default function SearchPage() {
 
   // 백엔드 연동 상태
   const [codies, setCodies] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
-
-  // 컴포넌트 마운트 시 카테고리 목록 로드
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    try {
-      const categoryList = await getAvailableCategories();
-      setCategories(categoryList);
-    } catch (err) {
-      console.error('카테고리 로드 실패:', err);
-      // 카테고리 로드 실패는 사용자에게 표시하지 않음 (선택사항)
-    }
-  };
 
   const doSearch = async () => {
     setLoading(true);
@@ -168,7 +161,7 @@ export default function SearchPage() {
       const searchParams = {
         searchText: query.trim(),
         searchScope: "both", // 제목과 설명 모두 검색
-        category: category && category !== "all" ? category : "",
+        weather: category && category !== "all" ? category : "",
         sortBy: order === "likes" ? "likes" : "latest"
       };
 
@@ -220,17 +213,16 @@ export default function SearchPage() {
               <SelectValue placeholder="카테고리" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
               {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
+                <SelectItem key={cat.value} value={cat.value}>
+                  {cat.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
           <Input
-            placeholder="코디, 사용자, 계절 키워드로 검색"
+            placeholder="검색할 텍스트를 입력해 주세요."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyPress}
@@ -244,7 +236,7 @@ export default function SearchPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="latest">최신순</SelectItem>
-              <SelectItem value="likes">좋아요순</SelectItem>
+              <SelectItem value="likes">가나다순</SelectItem>
             </SelectContent>
           </Select>
 
