@@ -75,15 +75,33 @@ export default function WardrobePage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  /** @TODO 이미지는 하나만 넣을 수 있게 수정 */
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files || []);
-    const newImages = files.map((file) => ({
-      id: Date.now() + Math.random(),
-      file,
-      url: URL.createObjectURL(file),
-    }));
-    setImages((prev) => [...prev, ...newImages]);
+    const file = e.target.files[0];
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"]
+
+    if (file) {
+      // 1. 파일 타입(확장자) 검증
+      if (!allowedTypes.includes(file.type)) {
+        alert("JPEG, PNG, GIF 형식의 이미지 파일만 업로드할 수 있습니다.");
+        e.target.value = '';
+        return;
+      }
+
+      // 2. 파일 크기 검증
+      if (file.size > maxSizeBytes) {
+        alert("이미지 크기는 5MB 이하여야 합니다."); // 사용자에게 경고 메시지 표시
+        e.target.value = ''; // 파일 선택 초기화 (선택된 파일 없앰)
+        return; // 함수 실행 중단
+      }
+
+      // 모든 검증 통과 시 setImage
+      setImages([{
+        id: Date.now() + Math.random(),
+        file,
+        url: URL.createObjectURL(file),
+      }]);
+    }
   };
 
   const removeImage = (imageId) => {
@@ -94,7 +112,6 @@ export default function WardrobePage() {
   const fetchWardrobe = async () => {
     try {
       const wardrobeList = await ClothesManager.getWardrobeByIdFromApi();
-      console.log(wardrobeList);
       setList(wardrobeList);
     } catch (error) {
       alert(error.message);
@@ -195,8 +212,7 @@ export default function WardrobePage() {
                     <div className="border-2 border-dashed border-border rounded-lg p-6 text-center bg-secondary/20">
                       <input
                         type="file"
-                        multiple
-                        accept="image/*"
+                        accept=".jpg, .jpeg, .png, .gif"
                         onChange={handleImageUpload}
                         className="hidden"
                         id="image-upload"
