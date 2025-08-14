@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
  *  로그인해야만 접근 가능한 경로를 여기에 추가합니다.
  *  @TODO 추후에 /mypage 추가 필요 */ 
 const PROTECTED_ROUTES = ['/wardrobe', '/mypage']; 
-const AUTH_PAGES = ['/signup']; // 로그인/회원가입 페이지 경로
+const AUTH_PAGES = ['/login']; // 로그인/회원가입 페이지 경로
 
 export function middleware(request) {
   const response = NextResponse.next();
@@ -32,20 +32,14 @@ export function middleware(request) {
   }
 
 
-  // 보호된 경로에 접근했고, 세션 쿠키가 없으며, 현재 페이지가 로그인 페이지가 아닐 경우
-  // if (isProtected && !sessionCookie && !isLoginPage) {
-  //   // 로그인 페이지로 리디렉션합니다.
-  //   return NextResponse.redirect(new URL('/signup', request.url));
-  // }
-
   if (isLoggedIn && AUTH_PAGES.includes(request.nextUrl.pathname)) {
-    // 로그인 상태에서 /signup 접근 → 메인으로
+    // 로그인 상태에서 / 접근 → 메인으로
     return NextResponse.redirect(new URL('/', request.url));
   }
   
   if (!isLoggedIn && PROTECTED_ROUTES.includes(request.nextUrl.pathname)) {
     // 로그인 안 한 상태에서 보호 페이지 접근 → 로그인 페이지로
-    return NextResponse.redirect(new URL('/signup', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return response;
