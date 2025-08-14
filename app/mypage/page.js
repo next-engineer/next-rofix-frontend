@@ -17,8 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const PC_ALIAS = { "봄웜": "봄 웜", "여름쿨": "여름 쿨", "가을웜": "가을 웜", "겨울쿨": "겨울 쿨" };
 const normalizePC = (v) => (PC_ALIAS[String(v || "").trim()] ?? String(v || "").trim());
-
-// ✅ 이모지 매핑 + 표시용 헬퍼
 const PC_EMOJI = { "봄 웜": "🌸", "여름 쿨": "🏖️", "가을 웜": "🍂", "겨울 쿨": "❄️" };
 const withEmoji = (label) => {
   const l = normalizePC(label || "");
@@ -49,7 +47,6 @@ export default function MyPage() {
     const next = saveUser({
       nickname: (form.nickname || "").trim() || "게스트",
       email: (form.email || "").trim(),
-      // 저장 값은 이모지 없이 라벨만
       personalColor: normalizePC(form.personalColor || ""),
     });
     setUser({ ...next, personalColor: normalizePC(next.personalColor) });
@@ -63,7 +60,6 @@ export default function MyPage() {
         <h2 className="text-2xl font-bold text-black dark:text-white mb-6">마이 페이지</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* 내 정보 */}
           <Card className="bg-white dark:bg-neutral-800 border-black/10 dark:border-white/10">
             <CardHeader>
               <CardTitle className="text-black dark:text-white">내 정보</CardTitle>
@@ -78,9 +74,7 @@ export default function MyPage() {
                   <div className="grid gap-1">
                     <div>닉네임: {mounted ? (user.nickname || "게스트") : "—"}</div>
                     <div>이메일: {mounted ? (user.email || "미등록") : "—"}</div>
-                    <div>
-                      퍼스널컬러: {mounted ? (user.personalColor ? withEmoji(user.personalColor) : "미설정") : "—"}
-                    </div>
+                    <div>퍼스널컬러: {mounted ? (user.personalColor ? withEmoji(user.personalColor) : "미설정") : "—"}</div>
                   </div>
                 </CardContent>
                 <div className="mt-3 flex items-center justify-between px-6 pb-6">
@@ -122,7 +116,7 @@ export default function MyPage() {
                         <SelectContent>
                           {PERSONAL_COLOR_OPTIONS.map((label) => (
                             <SelectItem key={label} value={label}>
-                              {withEmoji(label)} {/* ← 이모지 + 라벨 */}
+                              {withEmoji(label)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -138,13 +132,13 @@ export default function MyPage() {
             )}
           </Card>
 
-          {/* 내 코디 (필요하면 '내 옷장'으로 바꿔도 됨) */}
           <Card className="bg-white dark:bg-neutral-800 border-black/10 dark:border-white/10 md:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-black dark:text-white">내 코디</CardTitle>
                 <CardDescription className="text-neutral-600 dark:text-neutral-300" suppressHydrationWarning>
-                  {mounted ? <>내가 등록한 옷을 한눈에 확인할 수 있습니다. 총 {wardrobe.length}개</> : <>내가 등록한 옷을 한눈에 확인할 수 있습니다. 총 —개</>}
+                  {mounted ? <>내가 등록한 옷을 한눈에 확인할 수 있습니다. 총 {wardrobe.length}개</>
+                           : <>내가 등록한 옷을 한눈에 확인할 수 있습니다. 총 —개</>}
                 </CardDescription>
               </div>
             </CardHeader>
@@ -180,7 +174,6 @@ export default function MyPage() {
           </Card>
         </div>
 
-        {/* 회원탈퇴 */}
         <div className="mt-12 flex justify-center">
           <Button
             onClick={() => {
