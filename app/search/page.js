@@ -222,7 +222,7 @@ export default function SearchPage() {
           </Select>
 
           <Input
-            placeholder="코디, 사용자, 계절 키워드로 검색"
+            placeholder="검색할 텍스트를 입력해 주세요."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyPress}
@@ -236,7 +236,7 @@ export default function SearchPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="latest">최신순</SelectItem>
-              <SelectItem value="likes">좋아요순</SelectItem>
+              <SelectItem value="likes">가나다순</SelectItem>
             </SelectContent>
           </Select>
 
