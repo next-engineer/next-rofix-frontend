@@ -1,4 +1,4 @@
-name: Deploy Next.js SSR to AWS (No SaaS)
+name: Deploy Next.js SSR to AWS (Serverless v3)
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. 소스 코드 체크아웃
+      # 1. 소스 체크아웃
       - name: Checkout source
         uses: actions/checkout@v3
 
@@ -23,22 +23,24 @@ jobs:
         run: |
           echo "${{ secrets.ENV_PRODUCTION }}" > .env.production
 
-      # 3. Node.js 의존성 설치
+      # 3. 의존성 설치
       - name: Install dependencies
         run: npm ci
 
-      # 4. Next.js 빌드 (SSR)
+      # 4. Next.js 빌드
       - name: Build Next.js
         run: npm run build
 
-      # 5. Serverless Components CLI 설치
-      - name: Install Serverless Components CLI
-        run: npm install -g @serverless/components
+      # 5. Serverless Components CLI v3 설치
+      - name: Install Serverless Components CLI v3
+        run: npm install -g @serverless/components@3.7.0
 
-      # 6. AWS 인증 설정 (로그인 없이 Components 배포)
+      # 6. AWS 인증 설정
       - name: Configure AWS credentials
-        run: |
-          npx serverless config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY
+        run: npx serverless config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       # 7. SSR 배포
       - name: Deploy Next.js SSR to AWS
