@@ -22,46 +22,56 @@ jobs:
       - name: Create .env.production
         run: echo "${{ secrets.ENV_PRODUCTION }}" > .env.production
 
-      # 3. 의존성 설치
+      # 3. 의존성 설치 (SSR용 최소 설치)
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci --omit=dev
+          # 필요 없는 클라이언트 전용 패키지 제거
+          npm uninstall @radix-ui/react-@* geist embla-carousel-react cmdk recharts lucide-react input-otp vaul sonner
 
       # 4. Next.js 빌드
       - name: Build Next.js
         run: npm run build
 
-      # 5. S3 정적 파일 업로드 (SSR + Lambda용)
+      # 5. S3 정적 파일 업로드 (클라이언트용)
       - name: Upload static files to S3
         run: |
-          # Next.js 정적 JS/CSS
-          aws s3 sync .next/static s3://fitspot-frontend-bucket/_next/static --delete
-          # public 폴더 파일
-          aws s3 sync public/ s3://fitspot-frontend-bucket --delete
+          aws s3 sync .next/static s3://fitspot-bucket/_next/static --delete
+          aws s3 sync public/ s3://fitspot-bucket --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
-      # 6. Lambda 코드 패키징 (SSR용)
+      # 6. Lambda 코드 패키징 (SSR용, 용량 최소화)
       - name: Package Lambda
         run: |
           mkdir -p lambda_package
           cp -r .next node_modules package.json lambda_package/
           cd lambda_package && zip -r ../lambda.zip .
 
-      # 7. Lambda 업데이트
-      - name: Deploy to Lambda
+      # 7. Lambda zip 업로드 (기존 fitspot-bucket 사용)
+      - name: Upload Lambda zip to S3
+        run: aws s3 cp lambda.zip s3://fitspot-bucket/lambda-deployments/lambda.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+
+      # 8. Lambda 업데이트 (S3에서 가져오기)
+      - name: Update Lambda from S3
         run: |
           aws lambda update-function-code \
             --function-name next-ssr-lambda \
-            --zip-file fileb://lambda.zip \
+            --s3-bucket fitspot-bucket \
+            --s3-key lambda-deployments/lambda.zip \
             --region ap-northeast-2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
-      # 8. CloudFront 캐시 무효화
+      # 9. CloudFront 캐시 무효화
       - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
