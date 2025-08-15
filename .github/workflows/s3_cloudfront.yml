@@ -21,9 +21,7 @@ jobs:
         run: npm ci
 
       - name: Build Next.js and export
-        run: |
-          npm run build
-          npm run export
+        run: npm run build
 
       - name: Sync static files to S3
         uses: jakejarvis/s3-sync-action@master
