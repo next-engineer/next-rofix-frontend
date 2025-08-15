@@ -22,7 +22,7 @@ jobs:
       - name: Create .env.production
         run: echo "${{ secrets.ENV_PRODUCTION }}" > .env.production
 
-      # 3. 의존성 설치 (빌드용 전체 설치)
+      # 3. 의존성 설치
       - name: Install dependencies
         run: npm ci
 
@@ -30,52 +30,36 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      # 5. S3 정적 파일 업로드 (클라이언트용)
+      # 5. 정적 파일 S3 업로드
       - name: Upload static files to S3
         run: |
           aws s3 sync .next/static s3://fitspot-frontend-bucket/_next/static --delete
-          aws s3 sync public/ s3://fitspot-frontend-bucket --delete
+          aws s3 sync public/ s3://fitspot-frontend-bucket/ --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
-      # 6. Lambda 코드 패키징 (SSR용, 불필요 패키지 제거)
+      # 6. Lambda zip 패키징 (SSR 코드만)
       - name: Package Lambda
         run: |
           mkdir -p lambda_package
-          # .next, node_modules, package.json 복사
-          cp -r .next node_modules package.json lambda_package/
-          cd lambda_package
-          # Lambda에서 필요 없는 클라이언트 전용 패키지 제거
-          rm -rf node_modules/lucide-react node_modules/@radix-ui
-          rm -rf node_modules/geist node_modules/embla-carousel-react
-          rm -rf node_modules/cmdk node_modules/recharts
-          rm -rf node_modules/input-otp node_modules/vaul node_modules/sonner
-          zip -r ../lambda.zip .
+          cp -r .next/standalone node_modules package.json lambda_package/
+          cd lambda_package && zip -r ../lambda.zip .
 
-      # 7. Lambda zip 업로드 (기존 fitspot-frontend-bucket 사용, 서브폴더)
-      - name: Upload Lambda zip to S3
-        run: aws s3 cp lambda.zip s3://fitspot-frontend-bucket/lambda-deployments/lambda.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ap-northeast-2
-
-      # 8. Lambda 업데이트 (S3에서 가져오기)
-      - name: Update Lambda from S3
+      # 7. Lambda 배포
+      - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
             --function-name next-ssr-lambda \
-            --s3-bucket fitspot-frontend-bucket \
-            --s3-key lambda-deployments/lambda.zip \
+            --zip-file fileb://lambda.zip \
             --region ap-northeast-2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
-      # 9. CloudFront 캐시 무효화
+      # 8. CloudFront 캐시 무효화
       - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
