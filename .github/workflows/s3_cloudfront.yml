@@ -31,13 +31,9 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      # 5. Serverless Components CLI v3 설치
-      - name: Install Serverless CLI
-        run: npm install -g serverless
-
-      # 6. SSR 배포 (AWS 키 환경변수로 전달, SaaS 로그인 필요 없음)
+      # 5. Serverless v3를 사용하여 AWS에 SSR 배포
       - name: Deploy Next.js SSR to AWS
-        run: serverless deploy
+        run: npx serverless@3 deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
