@@ -22,12 +22,9 @@ jobs:
       - name: Create .env.production
         run: echo "${{ secrets.ENV_PRODUCTION }}" > .env.production
 
-      # 3. 의존성 설치 (SSR용 최소 설치)
+      # 3. 의존성 설치 (빌드용 전체 설치)
       - name: Install dependencies
-        run: |
-          npm ci --omit=dev
-          # 필요 없는 클라이언트 전용 패키지 제거
-          npm uninstall @radix-ui/react-@* geist embla-carousel-react cmdk recharts lucide-react input-otp vaul sonner
+        run: npm ci
 
       # 4. Next.js 빌드
       - name: Build Next.js
@@ -43,14 +40,21 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
-      # 6. Lambda 코드 패키징 (SSR용, 용량 최소화)
+      # 6. Lambda 코드 패키징 (SSR용, 불필요 패키지 제거)
       - name: Package Lambda
         run: |
           mkdir -p lambda_package
+          # .next, node_modules, package.json 복사
           cp -r .next node_modules package.json lambda_package/
-          cd lambda_package && zip -r ../lambda.zip .
+          cd lambda_package
+          # Lambda에서 필요 없는 클라이언트 전용 패키지 제거
+          rm -rf node_modules/lucide-react node_modules/@radix-ui
+          rm -rf node_modules/geist node_modules/embla-carousel-react
+          rm -rf node_modules/cmdk node_modules/recharts
+          rm -rf node_modules/input-otp node_modules/vaul node_modules/sonner
+          zip -r ../lambda.zip .
 
-      # 7. Lambda zip 업로드 (기존 fitspot-bucket 사용)
+      # 7. Lambda zip 업로드 (기존 fitspot-bucket 사용, 서브폴더)
       - name: Upload Lambda zip to S3
         run: aws s3 cp lambda.zip s3://fitspot-bucket/lambda-deployments/lambda.zip
         env:
