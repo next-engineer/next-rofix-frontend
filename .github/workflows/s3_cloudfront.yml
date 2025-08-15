@@ -1,3 +1,4 @@
+#deploy
 name: Deploy to S3 + Invalidate CloudFront
 
 on:
