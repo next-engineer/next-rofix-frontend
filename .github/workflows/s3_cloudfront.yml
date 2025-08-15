@@ -12,6 +12,11 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
 
+      # 여기서 .env.production 파일 생성
+      - name: Create .env.production file
+        run: |
+          echo "${{ secrets.ENV_PRODUCTION }}" > .env.production
+
       - name: Install dependencies
         run: npm ci
 
