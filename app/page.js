@@ -1,12 +1,14 @@
-"use client"
+"use client";
 
-import Header from "@/components/header"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Thermometer, Palette, Search, Shirt } from "lucide-react"
+import { useRef, useState } from "react";
+import Header from "@/components/header";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Thermometer, Palette, Search, Shirt } from "lucide-react";
 
-/* ====== 프리뷰에서 쓰던 컴팩트 Footer 그대로 이식 ====== */
+/* ====== 컴팩트 Footer ====== */
 function LiteFooter() {
   return (
     <footer className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black">
@@ -26,10 +28,10 @@ function LiteFooter() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
-/* ====== 카드: 프리뷰와 동일한 호버 인터랙션 적용 ====== */
+/* ====== 카드 ====== */
 function FeatureCard({ href, icon, title, desc, gradient = "from-[#6aa5ff] to-[#1c7dff]" }) {
   return (
     <Link href={href} className="block group">
@@ -51,17 +53,89 @@ function FeatureCard({ href, icon, title, desc, gradient = "from-[#6aa5ff] to-[#
         </div>
       </Card>
     </Link>
-  )
+  );
 }
 
-export default function HomePage() {
+/* ====== 브랜드 히어로(이미지 1장 + 한국어 소개) ====== */
+function BrandHero({
+  id = "brand-intro",
+  imageSrc = "/images/brand-hero.jpg",
+  imageAlt = "FitSpot 룩북",
+  cta = { label: "시작하기", href: "/recommend" },
+  className = "",
+}) {
   return (
-    // 본문을 flex-1로 채우고 푸터를 하단에 고정되듯 보이게 하기 위해 flex-col 적용
+    <section id={id} className={`w-full scroll-mt-28 md:scroll-mt-32 ${className}`}>
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 items-center">
+          {/* 이미지 */}
+          <div
+            className="relative w-full h-[22rem] md:h-[32rem] overflow-hidden
+                       rounded-[2rem] md:rounded-[2.5rem]
+                       ring-1 ring-black/5 dark:ring-white/10
+                       bg-neutral-100 dark:bg-neutral-800"
+          >
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              className="object-cover object-[center_30%]"
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+            />
+          </div>
+
+          {/* 한국어 브랜드 소개 */}
+          <div>
+            <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 leading-tight">
+              당신에게 딱 맞는<br className="hidden sm:block" />
+              코디를 발견하세요
+            </h2>
+
+            <p className="mt-6 text-base md:text-[17px] leading-7 text-neutral-700 dark:text-neutral-300">
+              FitSpot은 당신의 고유한 컬러와 현재 날씨를 기반으로 코디를 개인화해 추천합니다.
+              매일 더 멋지고 편안한 하루를 보낼 수 있도록, 로그인 또는 회원가입 후
+              나만의 스타일 여정을 시작해 보세요.
+            </p>
+            <p className="mt-4 text-base md:text-[17px] leading-7 text-neutral-700 dark:text-neutral-300">
+              간편한 인터페이스로 취향에 맞는 코디를 쉽게 찾을 수 있으며,
+              날씨 변화에 따라 추천도 자연스럽게 바뀝니다. FitSpot과 함께
+              옷장을 가볍게, 스타일은 더욱 업그레이드해 보세요.
+            </p>
+
+            {cta && (
+              <div className="mt-8">
+                <Link href={cta.href}>
+                  <Button
+                    className="rounded-2xl px-5
+                               transition-transform duration-200
+                               motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0
+                               shadow-sm hover:shadow-md
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 dark:focus-visible:ring-white/20"
+                  >
+                    {cta.label}
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ====== 페이지 ====== */
+export default function HomePage() {
+  const [showBrand, setShowBrand] = useState(false);
+  const brandWrapRef = useRef(null); // ✅ JS에서는 제네릭 사용 금지
+
+  return (
     <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col">
       <Header />
 
-      {/* 본문이 남은 높이를 차지하게 해서 푸터가 아래로 내려가도록 */}
       <section className="mx-auto max-w-6xl px-4 py-12 flex-1">
+        {/* 헤더 텍스트 */}
         <div className="text-center">
           <h1 className="text-[44px] md:text-[56px] font-extrabold tracking-tight text-neutral-900 dark:text-white">
             FitSpot
@@ -72,6 +146,7 @@ export default function HomePage() {
           </p>
         </div>
 
+        {/* 기능 카드 */}
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <FeatureCard
             href="/recommend"
@@ -80,7 +155,6 @@ export default function HomePage() {
             title="날씨별 추천"
             desc="오늘 날씨에 맞는 코디 추천"
           />
-        {/* 나머지 카드들도 동일 */}
           <FeatureCard
             href="/personal-color"
             gradient="from-[#f09ad9] to-[#b476ff]"
@@ -104,21 +178,40 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="mt-10 flex justify-center">
-          <Link href="/recommend" className="group">
-            <Button
-              className="h-10 px-6 rounded-md bg-[#0B64FE] text-white
-                         transition-transform hover:bg-[#0956da]
-                         motion-safe:group-hover:-translate-y-0.5"
-            >
-              지금 추천받기
-            </Button>
-          </Link>
+        {/* 브랜드 더 알아보기 (클릭 시 아래 섹션이 펼쳐짐) */}
+        <div className="mt-16 md:mt-20 flex justify-center">
+          <Button
+            onClick={() => {
+              if (!showBrand) {
+                setShowBrand(true);
+                setTimeout(() => brandWrapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+              } else {
+                brandWrapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }}
+            className="h-10 px-6 rounded-md bg-[#0B64FE] text-white hover:bg-[#0956da]
+                       transition-transform duration-200
+                       motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0
+                       shadow-sm hover:shadow-md
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B64FE]/40"
+          >
+            브랜드 더 알아보기
+          </Button>
+        </div>
+
+        {/* 펼침 컨테이너(부드러운 등장 애니메이션) */}
+        <div
+          ref={(el) => (brandWrapRef.current = el)} // ✅ 콜백 ref(안전)
+          className={`overflow-hidden transition-all duration-500 ease-out
+                     ${showBrand
+                       ? "mt-16 md:mt-24 opacity-100 translate-y-0"
+                       : "max-h-0 opacity-0 -translate-y-2 pointer-events-none"}`}
+        >
+          {showBrand && <BrandHero className="mt-0" />}
         </div>
       </section>
 
-      {/* 프리뷰의 LiteFooter 추가 */}
       <LiteFooter />
     </main>
-  )
+  );
 }
