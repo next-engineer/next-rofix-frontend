@@ -25,7 +25,7 @@ jobs:
         with:
           args: --delete
         env:
-          AWS_S3_BUCKET: ainfo-frontend # 우리 버킷으로 수정
+          AWS_S3_BUCKET: fitspot-frontend-bucket
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
@@ -34,7 +34,7 @@ jobs:
       - name: Invalidate CloudFront cache
         uses: chetan/invalidate-cloudfront-action@v2
         env:
-          DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} # cloudfront distribution_id 추가필요
+          DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
           PATHS: "/*"
           AWS_REGION: ap-northeast-2
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
