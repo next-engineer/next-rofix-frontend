@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Upload, X, Trash2 } from "lucide-react";
-import { getWardrobe, upsertWardrobe, deleteWardrobe } from "@/lib/storage";
+import ClothesManager from "@/lib/clothes-manager"; // clothes api 연동
 
 // 타입별 예시 이미지 (이미지 없을 때 사용)
 const fallbackByType = {
@@ -34,27 +34,16 @@ function fallbackImageFor(type = "") {
   return fallbackByType[type] || "/images/outfit-casual.png";
 }
 
-// 파일을 base64로 변환 (로컬스토리지에 이미지 저장용)
-const fileToBase64 = (file) =>
-  new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
-
 export default function WardrobePage() {
   const [list, setList] = useState([]);
 
   // 폼 초기값
   const [form, setForm] = useState({
     name: "",
-    type: "상의",
-    category: "",
+    type: "상의", // backend category와 매핑
     color: "white",
     weather: "all",
     description: "",
-    imageUrl: "", // 선택 입력
   });
 
   const [images, setImages] = useState([]);
@@ -87,73 +76,109 @@ export default function WardrobePage() {
   };
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files || []);
-    const newImages = files.map((file) => ({
-      id: Date.now() + Math.random(),
-      file,
-      url: URL.createObjectURL(file),
-    }));
-    setImages((prev) => [...prev, ...newImages]);
+    const file = e.target.files[0];
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"]
+
+    if (file) {
+      // 1. 파일 타입(확장자) 검증
+      if (!allowedTypes.includes(file.type)) {
+        alert("JPEG, PNG, GIF 형식의 이미지 파일만 업로드할 수 있습니다.");
+        e.target.value = '';
+        return;
+      }
+
+      // 2. 파일 크기 검증
+      if (file.size > maxSizeBytes) {
+        alert("이미지 크기는 5MB 이하여야 합니다."); // 사용자에게 경고 메시지 표시
+        e.target.value = ''; // 파일 선택 초기화 (선택된 파일 없앰)
+        return; // 함수 실행 중단
+      }
+
+      // 모든 검증 통과 시 setImage
+      setImages([{
+        id: Date.now() + Math.random(),
+        file,
+        url: URL.createObjectURL(file),
+      }]);
+    }
   };
 
   const removeImage = (imageId) => {
     setImages((prev) => prev.filter((img) => img.id !== imageId));
   };
 
-  useEffect(() => {
-    setList(getWardrobe());
-  }, []);
-
-  // 삭제 핸들러
-  const handleDelete = (id) => {
-    if (!id) return;
-    if (confirm("정말 삭제할까요?")) {
-      const updated = deleteWardrobe(id);
-      setList(updated);
+  // 옷장 데이터를 가져오는 비동기 함수
+  const fetchWardrobe = async () => {
+    try {
+      const wardrobeList = await ClothesManager.getWardrobeByIdFromApi();
+      setList(wardrobeList);
+    } catch (error) {
+      alert(error.message);
     }
   };
 
-  // 등록(로컬스토리지에 직접 저장)
+  useEffect(() => {
+    fetchWardrobe();
+  }, []);
+
+  // 삭제 핸들러
+  const handleDelete = async (clothingId) => {
+    if (!clothingId) return;
+    if (confirm("정말 삭제할까요?")) {
+      try {
+        await ClothesManager.deleteWardrobeFromApi(clothingId);
+        alert("옷이 성공적으로 삭제되었습니다.");
+        fetchWardrobe(); // 삭제 후 목록 새로고침
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  };
+
+  // 등록 핸들러 - 옷 등록 api 사용
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
-
-    // 이미지 결정: 파일 > URL > 타입별 예시
-    let imageSrc = fallbackImageFor(form.type);
-    if (images.length > 0 && images[0]?.file) {
-      try {
-        imageSrc = await fileToBase64(images[0].file);
-      } catch (err) {
-        console.error(err);
-        alert("이미지 파일을 읽는 중 오류가 발생했어요.");
-        return;
-      }
-    } else if (form.imageUrl?.trim()) {
-      imageSrc = form.imageUrl.trim();
+    if (!form.name.trim()) {
+      alert("옷 이름을 입력해주세요.");
+      return;
     }
 
-    const newWardrobeItem = {
-      ...form,
-      image: imageSrc,
-      likes: 0, // id는 storage에서 안전 발급
-    };
+    try {
+      // 서버에 전송할 옷 정보 데이터
+      const clothingData = {
+        title: form.name,
+        category: form.type, // 백엔드 DTO에 맞게 'type'을 'category'로 보냄
+        color: form.color,
+        weather: form.weather,
+        description: form.description,
+      };
 
-    const updated = upsertWardrobe(newWardrobeItem);
-    setList(updated);
+      const file = images.length > 0 ? images[0].file : null;
 
-    // 폼 리셋
-    setForm({
-      name: "",
-      type: "상의",
-      category: "",
-      color: "white",
-      weather: "all",
-      description: "",
-      imageUrl: "",
-    });
-    setImages([]);
-    const inputEl = document.getElementById("image-upload");
-    if (inputEl) inputEl.value = "";
+      // ClothesManager를 사용하여 API 호출
+      const newClothing = await ClothesManager.createClothing(
+        clothingData,
+        file
+      );
+      alert("옷이 성공적으로 등록되었습니다!");
+
+      fetchWardrobe(); // 등록 후 목록 새로고침
+
+      // 폼 리셋
+      setForm({
+        name: "",
+        type: "상의",
+        color: "white",
+        weather: "all",
+        description: "",
+      });
+      setImages([]);
+      const inputEl = document.getElementById("image-upload");
+      if (inputEl) inputEl.value = "";
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   return (
@@ -187,8 +212,7 @@ export default function WardrobePage() {
                     <div className="border-2 border-dashed border-border rounded-lg p-6 text-center bg-secondary/20">
                       <input
                         type="file"
-                        multiple
-                        accept="image/*"
+                        accept=".jpg, .jpeg, .png, .gif"
                         onChange={handleImageUpload}
                         className="hidden"
                         id="image-upload"
@@ -224,19 +248,6 @@ export default function WardrobePage() {
                     )}
                   </div>
 
-                  {/* 이미지 URL (선택) */}
-                  <div className="grid gap-2">
-                    <Label className="text-[#0B64FE]">이미지 URL (선택)</Label>
-                    <Input
-                      value={form.imageUrl}
-                      onChange={(e) =>
-                        handleInputChange("imageUrl", e.target.value)
-                      }
-                      placeholder="https://... (파일을 첨부하면 파일이 우선)"
-                      className="bg-white dark:bg-neutral-800"
-                    />
-                  </div>
-
                   <div className="grid gap-2">
                     <Label className="text-[#0B64FE]">이름</Label>
                     <Input
@@ -249,14 +260,14 @@ export default function WardrobePage() {
                     />
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4">
                     <div className="grid gap-2 flex-shrink-0">
                       <Label className="text-[#0B64FE]">카테고리</Label>
                       <Select
                         value={form.type}
                         onValueChange={(v) => setForm({ ...form, type: v })}
                       >
-                        <SelectTrigger className="bg-white dark:bg-neutral-800 w-24">
+                        <SelectTrigger className="bg-white dark:bg-neutral-800 w-22">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -274,7 +285,7 @@ export default function WardrobePage() {
                         value={form.color}
                         onValueChange={(v) => handleInputChange("color", v)}
                       >
-                        <SelectTrigger className="bg-white dark:bg-neutral-800 w-24">
+                        <SelectTrigger className="bg-white dark:bg-neutral-800 w-22">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -293,7 +304,7 @@ export default function WardrobePage() {
                         value={form.weather}
                         onValueChange={(v) => handleInputChange("weather", v)}
                       >
-                        <SelectTrigger className="bg-white dark:bg-neutral-800 w-24">
+                        <SelectTrigger className="bg-white dark:bg-neutral-800 w-22">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -335,7 +346,9 @@ export default function WardrobePage() {
           {/* ⬇️ 오른쪽: 내 옷장 (항상 보임) */}
           <Card className="bg-white dark:bg-neutral-800 border-black/10 dark:border-white/10 md:col-span-2">
             <CardHeader>
-              <CardTitle className="text-black dark:text-white">내 옷장</CardTitle>
+              <CardTitle className="text-black dark:text-white">
+                내 옷장
+              </CardTitle>
               <CardDescription className="text-neutral-600 dark:text-neutral-300">
                 등록한 옷과 예시 이미지를 확인할 수 있어요.
               </CardDescription>
@@ -344,21 +357,21 @@ export default function WardrobePage() {
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {list.map((i) => (
                   <Card
-                    key={i.id}
+                    key={i.clothingId}
                     className="bg-white dark:bg-neutral-800 border-black/10 dark:border-white/10"
                   >
                     <CardContent className="pt-4">
                       <div className="relative w-full h-40 rounded-md overflow-hidden border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-700">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={i.image || fallbackImageFor(i.type)}
+                          src={i.imageUrl || fallbackImageFor(i.type)}
                           alt={i.name}
                           className="w-full h-40 object-cover"
                         />
                         {/* 삭제 버튼 */}
                         <button
                           type="button"
-                          onClick={() => handleDelete(i.id)}
+                          onClick={() => handleDelete(i.clothingId)}
                           className="absolute top-2 right-2 inline-flex items-center justify-center rounded-md border border-red-300/60 bg-white/80 dark:bg-neutral-800 px-2 py-1 text-xs text-red-600 hover:bg-white shadow-sm"
                           title="삭제"
                         >
@@ -367,13 +380,10 @@ export default function WardrobePage() {
                       </div>
 
                       <div className="mt-2 font-semibold text-black dark:text-white">
-                        {i.name}
+                        {i.title}
                       </div>
                       <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                        {i.type} · {i.category} · {i.color}
-                      </div>
-                      <div className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                        좋아요 {i.likes ?? 0}
+                        {i.category} · {i.color} · {i.weather}
                       </div>
                     </CardContent>
                   </Card>
@@ -381,7 +391,8 @@ export default function WardrobePage() {
 
                 {list.length === 0 && (
                   <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                    아직 등록된 옷이 없어요. 등록하면 이 영역에 카드가 채워집니다.
+                    아직 등록된 옷이 없어요. 등록하면 이 영역에 카드가
+                    채워집니다.
                   </div>
                 )}
               </div>

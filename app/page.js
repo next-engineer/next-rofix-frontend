@@ -67,9 +67,7 @@ function FeatureCard({ href, icon, title, desc, gradient = "from-[#6aa5ff] to-[#
     <Link href={href} className="block">
       <Card className="h-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition rounded-2xl">
         <div className="flex flex-col items-center text-center px-8 py-8">
-          <div
-            className={`mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-sm`}
-          >
+          <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${gradient} shadow-sm`}>
             {icon}
           </div>
           <div className="mt-1 font-semibold text-neutral-900 dark:text-white">{title}</div>
