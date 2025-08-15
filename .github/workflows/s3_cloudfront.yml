@@ -50,7 +50,7 @@ jobs:
       # 7. Lambda zip S3 업로드
       - name: Upload Lambda zip to S3
         run: |
-          aws s3 cp lambda.zip s3://fitspot-lambda-deployments/lambda.zip
+          aws s3 cp lambda.zip s3://fitspot-cloudfront-logs/lambda.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -61,7 +61,7 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name next-ssr-lambda \
-            --s3-bucket fitspot-lambda-deployments \
+            --s3-bucket fitspot-cloudfront-logs \
             --s3-key lambda.zip \
             --region ap-northeast-2
         env:
