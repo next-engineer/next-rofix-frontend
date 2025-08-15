@@ -67,7 +67,7 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name next-ssr-lambda \
-            --s3-bucket fitspot-bucket \
+            --s3-bucket fitspot-frontend-bucket \
             --s3-key lambda-deployments/lambda.zip \
             --region ap-northeast-2
         env:
