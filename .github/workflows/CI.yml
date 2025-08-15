@@ -12,21 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 소스코드 가져오기
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Node.js 환경 세팅 + pnpm 설치
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "20"
-          cache: "pnpm"
 
-      # 3. 의존성 설치
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
-      # 4. Lint 확인
       - name: Run lint
-        run: pnpm run lint
+        run: npm run lint
