@@ -34,7 +34,7 @@ jobs:
       - name: Upload static files to S3
         run: |
           aws s3 sync .next/static s3://fitspot-frontend-bucket/_next/static --delete
-          aws s3 sync public/ s3://fitspot-bucket --delete
+          aws s3 sync public/ s3://fitspot-frontend-bucket --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -54,7 +54,7 @@ jobs:
           rm -rf node_modules/input-otp node_modules/vaul node_modules/sonner
           zip -r ../lambda.zip .
 
-      # 7. Lambda zip 업로드 (기존 fitspot-bucket 사용, 서브폴더)
+      # 7. Lambda zip 업로드 (기존 fitspot-frontend-bucket 사용, 서브폴더)
       - name: Upload Lambda zip to S3
         run: aws s3 cp lambda.zip s3://fitspot-frontend-bucket/lambda-deployments/lambda.zip
         env:
