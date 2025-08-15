@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",
+  reactStrictMode: true, // 권장 옵션
+  swcMinify: true, // 빌드 최적화
   images: {
-    unoptimized: true,
+    unoptimized: false, // Amplify SSR에서 자동 최적화 사용
   },
 };
 

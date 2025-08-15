@@ -1,0 +1,39 @@
+name: Next.js CI (Build & Lint Check)
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 소스코드 가져오기
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Node.js 환경 세팅
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      # 3. pnpm 설치
+      - name: Enable corepack and install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm install --frozen-lockfile
+
+      # 4. Lint 확인
+      - name: Run lint
+        run: pnpm run lint
+
+      # 5. 빌드 테스트 (SSR 앱 빌드 확인)
+      - name: Build project
+        run: pnpm run build
