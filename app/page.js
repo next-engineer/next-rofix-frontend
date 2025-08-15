@@ -97,11 +97,19 @@ function BrandHero({
               매일 더 멋지고 편안한 하루를 보낼 수 있도록, 로그인 또는 회원가입 후
               나만의 스타일 여정을 시작해 보세요.
             </p>
-            <p className="mt-4 text-base md:text-[17px] leading-7 text-neutral-700 dark:text-neutral-300">
-              간편한 인터페이스로 취향에 맞는 코디를 쉽게 찾을 수 있으며,
-              날씨 변화에 따라 추천도 자연스럽게 바뀝니다. FitSpot과 함께
-              옷장을 가볍게, 스타일은 더욱 업그레이드해 보세요.
+            <p
+              className="mt-4 text-base md:text-[17px] leading-7 text-neutral-700 dark:text-neutral-300 max-w-[68ch]"
+              style={{ wordBreak: "keep-all" }}
+            >
+              간편한 인터페이스로 취향에 맞는 코디를 쉽게 찾을 수 있으며, 날씨 변화에 따라 추천도 자연스럽게 바뀝니다.{" "}
+              Rofix와 함께 옷장을
+              {/* ⬇️ 모바일에서만 줄바꿈 */}
+              <br className="sm:hidden" />
+              {/* ⬇️ '가볍게 스타일은'을 한 줄로 묶음(모바일에서만 강제) */}
+              <span className="whitespace-nowrap sm:whitespace-normal"> 가볍게 스타일은</span>{" "}
+              더욱 업그레이드해 보세요.
             </p>
+
 
             {cta && (
               <div className="mt-8">
