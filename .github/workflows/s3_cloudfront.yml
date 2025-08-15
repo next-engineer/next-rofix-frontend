@@ -14,12 +14,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
 
-      # 여기서 .env.production 파일 생성
       - name: Create .env.production file
         run: |
           echo "${{ secrets.ENV_PRODUCTION }}" > .env.production
@@ -27,25 +25,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Next.js and export
+      - name: Build Next.js
         run: npm run build
 
-      - name: Sync static files to S3
-        uses: jakejarvis/s3-sync-action@master
+      - name: Deploy to AWS (SSR) with Serverless Framework
+        uses: serverless/github-action@v3
         with:
-          args: --delete
+          args: deploy
         env:
-          AWS_S3_BUCKET: fitspot-frontend-bucket
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
-          SOURCE_DIR: "./out"
-
-      - name: Invalidate CloudFront cache
-        uses: chetan/invalidate-cloudfront-action@v2
-        env:
-          DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-          PATHS: "/*"
-          AWS_REGION: ap-northeast-2
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
