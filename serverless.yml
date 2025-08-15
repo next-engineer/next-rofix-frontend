@@ -1,3 +1,5 @@
+frameworkVersion: "3.x"
+
 component: "@sls-next/serverless-component@3.7.0"
 
 inputs:
