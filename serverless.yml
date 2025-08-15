@@ -2,7 +2,7 @@ component: "@sls-next/serverless-component@3.7.0"
 
 inputs:
   domain:
-    - "yourdomain.com"
+    - "fitspot.nextcloudlab.com"
   memory: 512
   timeout: 10
   bucketName: "fitspot-frontend-bucket"
