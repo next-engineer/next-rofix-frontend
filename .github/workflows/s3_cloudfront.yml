@@ -32,7 +32,7 @@ jobs:
         run: npm run build
 
       # 5. Serverless Components CLI v3 설치
-      - name: Install Serverless CLI v3
+      - name: Install Serverless CLI
         run: npm install -g serverless
 
       # 6. SSR 배포 (AWS 키 환경변수로 전달, SaaS 로그인 필요 없음)
