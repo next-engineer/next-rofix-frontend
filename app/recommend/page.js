@@ -8,16 +8,9 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import Link from "next/link"
 import OutfitRecommendationEngine from "@/lib/outfit-recommendation-engine"
-import { getUser, ensureUserHasNumericId } from "@/lib/storage"
+import { getUser, ensureUserHasNumericId } from "@/lib/storage" // 수정: ensureUserHasNumericId 추가
 import { ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
-// 수정: cody-recommend.js 대신 recommend.js에서 함수 가져오기
-import {
-  recommendOutfit,
-  getCodyRecommendationByWeather,
-  mapWeatherKeyToBackend,
-  mapSeasonKeyToPersonalColor,
-  transformBackendResponse
-} from "@/lib/recommend"
+import { getCodyRecommendationByWeather, mapWeatherKeyToBackend, mapSeasonKeyToPersonalColor, transformBackendResponse } from "@/lib/cody-recommend"
 
 // 로컬 엔진을 백업용으로 유지
 const engine = new OutfitRecommendationEngine()
@@ -46,7 +39,7 @@ function mapUserSeasonToKey(userLabel = "") {
 }
 
 export default function RecommendWizardPage() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(null) // 수정: useState로 user 관리
   const [step, setStep] = useState(0) // 0=날씨, 1=퍼스널컬러, done=결과
   const total = 2
 
@@ -58,6 +51,7 @@ export default function RecommendWizardPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // 수정: 컴포넌트 마운트 시 사용자 정보 확인/생성
   useEffect(() => {
     const currentUser = ensureUserHasNumericId();
     setUser(currentUser);
@@ -77,6 +71,7 @@ export default function RecommendWizardPage() {
   const prev = () => setStep((s) => Math.max(0, s - 1))
 
   const finalize = async () => {
+    // 수정: user?.userId 확인
     if (!user?.userId) {
       setError("사용자 정보를 찾을 수 없습니다. 페이지를 새로고침해 주세요.")
       return
@@ -90,7 +85,7 @@ export default function RecommendWizardPage() {
       const backendWeather = mapWeatherKeyToBackend(weatherKey)
       const personalColor = mapSeasonKeyToPersonalColor(seasonKey)
 
-      console.log('API 호출 파라미터:', {
+      console.log('API 호출 파라미터:', { // 디버깅용 로그 추가
         weather: backendWeather,
         userId: user.userId,
         personalColor: personalColor
@@ -103,7 +98,7 @@ export default function RecommendWizardPage() {
         force: false
       })
 
-      console.log('API 응답:', apiResponse);
+      console.log('API 응답:', apiResponse); // 디버깅용 로그 추가
 
       if (apiResponse.success && apiResponse.data && apiResponse.data.codys && apiResponse.data.codys.length > 0) {
         // 백엔드 응답 성공
@@ -136,7 +131,6 @@ export default function RecommendWizardPage() {
       setLoading(false)
     }
   }
-
 
   const resetAll = () => {
     setStep(0)
