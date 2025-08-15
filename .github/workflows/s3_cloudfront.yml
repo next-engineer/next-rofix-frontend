@@ -1,4 +1,4 @@
-name: Deploy to S3 + Invalidate CloudFront
+name: Deploy Next.js SSR to AWS
 
 on:
   push:
@@ -27,6 +27,9 @@ jobs:
 
       - name: Build Next.js
         run: npm run build
+
+      - name: Install Serverless Components CLI
+        run: npm install -g @serverless/components
 
       - name: Deploy to AWS (SSR) with Serverless Framework
         uses: serverless/github-action@v3
