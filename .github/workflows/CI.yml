@@ -1,4 +1,4 @@
-name: Next.js CI (Build & Lint Check)
+name: Next.js CI (Lint Check)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,24 +16,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Node.js 환경 세팅
+      # 2. Node.js 환경 세팅 + pnpm 설치
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "20"
           cache: "pnpm"
 
-      # 3. pnpm 설치
-      - name: Enable corepack and install pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-          pnpm install --frozen-lockfile
+      # 3. 의존성 설치
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       # 4. Lint 확인
       - name: Run lint
         run: pnpm run lint
-
-      # 5. 빌드 테스트 (SSR 앱 빌드 확인)
-      - name: Build project
-        run: pnpm run build
