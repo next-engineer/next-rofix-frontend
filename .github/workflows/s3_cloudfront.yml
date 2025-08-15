@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
 
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'main'
+        required: true
+        default: 'main'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
