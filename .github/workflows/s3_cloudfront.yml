@@ -30,16 +30,19 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      # 5. S3 정적 파일 업로드
+      # 5. S3 정적 파일 업로드 (SSR + Lambda용)
       - name: Upload static files to S3
         run: |
-          aws s3 sync out/ s3://fitspot-frontend-bucket --delete
+          # Next.js 정적 JS/CSS
+          aws s3 sync .next/static s3://fitspot-frontend-bucket/_next/static --delete
+          # public 폴더 파일
+          aws s3 sync public/ s3://fitspot-frontend-bucket --delete
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
-      # 6. Lambda 코드 패키징
+      # 6. Lambda 코드 패키징 (SSR용)
       - name: Package Lambda
         run: |
           mkdir -p lambda_package
