@@ -1,15 +1,7 @@
 name: Deploy to S3 + Invalidate CloudFront
 
 on:
-  push:
-    branches: [main]
-
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'main'
-        required: true
-        default: 'main'
 
 jobs:
   deploy:

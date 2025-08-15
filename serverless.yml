@@ -1,0 +1,10 @@
+component: "@sls-next/serverless-component@3.7.0"
+
+inputs:
+  domain:
+    - "yourdomain.com"
+  memory: 512
+  timeout: 10
+  bucketName: "fitspot-frontend-bucket"
+  environment:
+    NEXT_PUBLIC_API_URL: "http://localhost:8080/api"
