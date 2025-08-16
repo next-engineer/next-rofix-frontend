@@ -38,9 +38,41 @@ const PC_EMOJI = {
   "가을 웜": "🍂",
   "겨울 쿨": "❄️",
 };
+
 const withEmoji = (label) => {
   const l = normalizePC(label || "");
   return l ? `${PC_EMOJI[l] ?? ""} ${l}`.trim() : "";
+};
+
+const colors = [
+  { value: "black", label: "블랙" },
+  { value: "white", label: "화이트" },
+  { value: "gray", label: "그레이" },
+  { value: "navy", label: "네이비" },
+  { value: "brown", label: "브라운" },
+  { value: "beige", label: "베이지" },
+  { value: "red", label: "레드" },
+  { value: "blue", label: "블루" },
+  { value: "green", label: "그린" },
+  { value: "yellow", label: "옐로우" },
+  { value: "pink", label: "핑크" },
+  { value: "purple", label: "퍼플" },
+];
+
+const weathers = [
+  { key: "hot", label: "더움", emoji: "🔥" },
+  { key: "cold", label: "추움", emoji: "❄️" },
+  { key: "sunny", label: "맑음", emoji: "☀️" },
+  { key: "cloudy", label: "흐림", emoji: "☁️" },
+  { key: "rainy", label: "비", emoji: "🌧️" },
+];
+
+const getColorLabel = (value) =>
+  colors.find((c) => c.value === value)?.label || value;
+
+const getWeatherLabel = (key) => {
+  const w = weathers.find((w) => w.key === key);
+  return w ? `${w.label} ${w.emoji}` : key;
 };
 
 export default function MyPage() {
@@ -290,7 +322,7 @@ export default function MyPage() {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {wardrobe.map((i) => (
                     <Card
-                      key={i.id}
+                      key={i.clothingId}
                       className="bg-white dark:bg-neutral-800 border-black/10 dark:border-white/10"
                     >
                       <CardContent className="pt-4">
@@ -309,9 +341,8 @@ export default function MyPage() {
                           {i.title || "이름 없음"}
                         </div>
                         <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                          {[i.category, i.color, i.weather]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          {i.category} · {getColorLabel(i.color)} ·{" "}
+                          {getWeatherLabel(i.weather)}
                         </div>
                       </CardContent>
                     </Card>
