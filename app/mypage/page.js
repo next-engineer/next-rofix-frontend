@@ -294,7 +294,7 @@ export default function MyPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-black dark:text-white">
-                  내 코디
+                  내 옷장
                 </CardTitle>
                 <CardDescription
                   className="text-neutral-600 dark:text-neutral-300"
@@ -319,8 +319,7 @@ export default function MyPage() {
                 </div>
               ) : wardrobe.length === 0 ? (
                 <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                  등록된 옷이 없습니다. <b>옷 등록</b> 버튼을 눌러 추가해
-                  주세요.
+                  등록된 옷이 없습니다.
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
