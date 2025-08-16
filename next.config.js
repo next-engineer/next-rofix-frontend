@@ -18,6 +18,8 @@ const nextConfig = {
     unoptimized: true,
   },
 
+  outputFileTracing: true,   // SSR에서 CSS/JS 자동 포함
+
   // 추후 백엔드 API 연동 시 필요하면 주석 해제
   // async rewrites() {
   //   return [
