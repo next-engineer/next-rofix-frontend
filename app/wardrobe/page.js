@@ -58,13 +58,13 @@ const weathers = [
   { key: "rainy", label: "비", emoji: "🌧️" },
 ];
 
-// const seasons = [
-//   { value: "spring", label: "봄" },
-//   { value: "summer", label: "여름" },
-//   { value: "autumn", label: "가을" },
-//   { value: "winter", label: "겨울" },
-//   { value: "all", label: "사계절" },
-// ];
+const getColorLabel = (value) =>
+  colors.find((c) => c.value === value)?.label || value;
+
+const getWeatherLabel = (key) => {
+  const w = weathers.find((w) => w.key === key);
+  return w ? `${w.label} ${w.emoji}` : key;
+};
 
 export default function WardrobePage() {
   const [list, setList] = useState([]);
@@ -216,7 +216,7 @@ export default function WardrobePage() {
                   새 옷 등록
                 </CardTitle>
                 <CardDescription className="text-neutral-600 dark:text-neutral-300">
-                  이미지 URL을 입력하거나 파일을 첨부해 등록할 수 있어요.
+                  이미지 파일을 첨부해 등록할 수 있어요.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -400,17 +400,8 @@ export default function WardrobePage() {
                         {i.title}
                       </div>
                       <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                        {i.category} ·{" "}
-                        {colors.find((c) => c.value === i.color)?.label ||
-                          i.color}{" "}
-                        ·{" "}
-                        {weathers.find((w) => w.key === i.weather)
-                          ? `${
-                              weathers.find((w) => w.key === i.weather).label
-                            } ${
-                              weathers.find((w) => w.key === i.weather).emoji
-                            }`
-                          : i.weather}
+                        {i.category} · {getColorLabel(i.color)} ·{" "}
+                        {getWeatherLabel(i.weather)}
                       </div>
                     </CardContent>
                   </Card>
@@ -418,8 +409,7 @@ export default function WardrobePage() {
 
                 {list.length === 0 && (
                   <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                    아직 등록된 옷이 없어요. 등록하면 이 영역에 카드가
-                    채워집니다.
+                    아직 등록된 옷이 없어요.
                   </div>
                 )}
               </div>
