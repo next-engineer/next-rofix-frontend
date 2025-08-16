@@ -68,3 +68,8 @@ next-env.d.ts
 # Windows reserved name
 # ==============================
 NUL
+
+# ==============================
+# Package managers
+# ==============================
+package-lock.json
