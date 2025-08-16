@@ -67,6 +67,10 @@ const weathers = [
   { key: "rainy", label: "비", emoji: "🌧️" },
 ];
 
+function fallbackImageFor() {
+  return "/images/outfit-casual.png";
+}
+
 const getColorLabel = (value) =>
   colors.find((c) => c.value === value)?.label || value;
 
@@ -315,7 +319,7 @@ export default function MyPage() {
                 </div>
               ) : wardrobe.length === 0 ? (
                 <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                  등록된 옷이 없습니다. <b>옷 등록하기</b> 버튼을 눌러 추가해
+                  등록된 옷이 없습니다. <b>옷 등록</b> 버튼을 눌러 추가해
                   주세요.
                 </div>
               ) : (
@@ -327,15 +331,11 @@ export default function MyPage() {
                     >
                       <CardContent className="pt-4">
                         <div className="w-full h-40 rounded-md border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-700 flex items-center justify-center text-neutral-400 dark:text-neutral-300 overflow-hidden">
-                          {i.image ? (
-                            <img
-                              src={i.image || "/placeholder.svg"}
-                              alt={i.title || "item"}
-                              className="w-full h-40 object-cover rounded-md"
-                            />
-                          ) : (
-                            "이미지"
-                          )}
+                          <img
+                            src={i.imageUrl || "/images/outfit-casual.png"} // imageUrl로 변경
+                            alt={i.title || "item"}
+                            className="w-full h-40 object-cover rounded-md"
+                          />
                         </div>
                         <div className="mt-2 font-semibold text-black dark:text-white">
                           {i.title || "이름 없음"}
