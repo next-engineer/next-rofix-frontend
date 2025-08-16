@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/components/header";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -33,43 +33,54 @@ const fallbackByType = {
 function fallbackImageFor(type = "") {
   return fallbackByType[type] || "/images/outfit-casual.png";
 }
+import { useRouter } from "next/navigation";
+
+const colors = [
+  { value: "black", label: "블랙" },
+  { value: "white", label: "화이트" },
+  { value: "gray", label: "그레이" },
+  { value: "navy", label: "네이비" },
+  { value: "brown", label: "브라운" },
+  { value: "beige", label: "베이지" },
+  { value: "red", label: "레드" },
+  { value: "blue", label: "블루" },
+  { value: "green", label: "그린" },
+  { value: "yellow", label: "옐로우" },
+  { value: "pink", label: "핑크" },
+  { value: "purple", label: "퍼플" },
+];
+
+const weathers = [
+  { key: "hot", label: "더움", emoji: "🔥" },
+  { key: "cold", label: "추움", emoji: "❄️" },
+  { key: "sunny", label: "맑음", emoji: "☀️" },
+  { key: "cloudy", label: "흐림", emoji: "☁️" },
+  { key: "rainy", label: "비", emoji: "🌧️" },
+];
+
+// const seasons = [
+//   { value: "spring", label: "봄" },
+//   { value: "summer", label: "여름" },
+//   { value: "autumn", label: "가을" },
+//   { value: "winter", label: "겨울" },
+//   { value: "all", label: "사계절" },
+// ];
 
 export default function WardrobePage() {
   const [list, setList] = useState([]);
+  const router = useRouter();
+  const calledRef = useRef(false);
 
   // 폼 초기값
   const [form, setForm] = useState({
     name: "",
     type: "상의", // backend category와 매핑
     color: "white",
-    weather: "all",
+    weather: "hot",
     description: "",
   });
 
   const [images, setImages] = useState([]);
-
-  const colors = [
-    { value: "black", label: "블랙" },
-    { value: "white", label: "화이트" },
-    { value: "gray", label: "그레이" },
-    { value: "navy", label: "네이비" },
-    { value: "brown", label: "브라운" },
-    { value: "beige", label: "베이지" },
-    { value: "red", label: "레드" },
-    { value: "blue", label: "블루" },
-    { value: "green", label: "그린" },
-    { value: "yellow", label: "옐로우" },
-    { value: "pink", label: "핑크" },
-    { value: "purple", label: "퍼플" },
-  ];
-
-  const seasons = [
-    { value: "spring", label: "봄" },
-    { value: "summer", label: "여름" },
-    { value: "autumn", label: "가을" },
-    { value: "winter", label: "겨울" },
-    { value: "all", label: "사계절" },
-  ];
 
   const handleInputChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -78,29 +89,31 @@ export default function WardrobePage() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"]
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
 
     if (file) {
       // 1. 파일 타입(확장자) 검증
       if (!allowedTypes.includes(file.type)) {
         alert("JPEG, PNG, GIF 형식의 이미지 파일만 업로드할 수 있습니다.");
-        e.target.value = '';
+        e.target.value = "";
         return;
       }
 
       // 2. 파일 크기 검증
       if (file.size > maxSizeBytes) {
         alert("이미지 크기는 5MB 이하여야 합니다."); // 사용자에게 경고 메시지 표시
-        e.target.value = ''; // 파일 선택 초기화 (선택된 파일 없앰)
+        e.target.value = ""; // 파일 선택 초기화 (선택된 파일 없앰)
         return; // 함수 실행 중단
       }
 
       // 모든 검증 통과 시 setImage
-      setImages([{
-        id: Date.now() + Math.random(),
-        file,
-        url: URL.createObjectURL(file),
-      }]);
+      setImages([
+        {
+          id: Date.now() + Math.random(),
+          file,
+          url: URL.createObjectURL(file),
+        },
+      ]);
     }
   };
 
@@ -114,11 +127,15 @@ export default function WardrobePage() {
       const wardrobeList = await ClothesManager.getWardrobeByIdFromApi();
       setList(wardrobeList);
     } catch (error) {
+      // 알림창 띄우고 → 확인 누르면 메인으로 이동
       alert(error.message);
+      router.replace("/");
     }
   };
 
   useEffect(() => {
+    if (calledRef.current) return; // 이미 호출했으면 종료
+    calledRef.current = true;
     fetchWardrobe();
   }, []);
 
@@ -170,7 +187,7 @@ export default function WardrobePage() {
         name: "",
         type: "상의",
         color: "white",
-        weather: "all",
+        weather: "hot",
         description: "",
       });
       setImages([]);
@@ -308,9 +325,9 @@ export default function WardrobePage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {seasons.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>
-                              {s.label}
+                          {weathers.map((s) => (
+                            <SelectItem key={s.key} value={s.key}>
+                              {s.label} {s.emoji}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -383,7 +400,17 @@ export default function WardrobePage() {
                         {i.title}
                       </div>
                       <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                        {i.category} · {i.color} · {i.weather}
+                        {i.category} ·{" "}
+                        {colors.find((c) => c.value === i.color)?.label ||
+                          i.color}{" "}
+                        ·{" "}
+                        {weathers.find((w) => w.key === i.weather)
+                          ? `${
+                              weathers.find((w) => w.key === i.weather).label
+                            } ${
+                              weathers.find((w) => w.key === i.weather).emoji
+                            }`
+                          : i.weather}
                       </div>
                     </CardContent>
                   </Card>
