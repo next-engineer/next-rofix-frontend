@@ -59,7 +59,18 @@ const useAuth = () => {
     setIsLoading(false);
   };
 
-  return { user, isLoading, login, logout };
+  const deleteAccount = async () => {
+    try {
+      await axiosInstance.delete("/users"); // 회원 탈퇴 API 호출
+      await logout(); // 로그아웃 처리
+      return true;
+    } catch (error) {
+      console.error("회원 탈퇴 실패:", error);
+      throw error; // 에러를 호출자에게 다시 던짐
+    }
+  };
+
+  return { user, isLoading, login, logout, deleteAccount };
 };
 
 export default useAuth;
