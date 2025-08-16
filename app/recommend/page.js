@@ -1,16 +1,15 @@
 "use client"
 
 import Header from "@/components/header"
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import Link from "next/link"
 import OutfitRecommendationEngine from "@/lib/outfit-recommendation-engine"
-import { getUser, ensureUserHasNumericId } from "@/lib/storage" // 수정: ensureUserHasNumericId 추가
-import { ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react"
-import { getCodyRecommendationByWeather, mapWeatherKeyToBackend, mapSeasonKeyToPersonalColor, transformBackendResponse } from "@/lib/cody-recommend"
+import { getUser } from "@/lib/storage"
+import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react"
 
 // 로컬 엔진을 백업용으로 유지
 const engine = new OutfitRecommendationEngine()
@@ -39,24 +38,16 @@ function mapUserSeasonToKey(userLabel = "") {
 }
 
 export default function RecommendWizardPage() {
-  const [user, setUser] = useState(null) // 수정: useState로 user 관리
+  const user = getUser()
+  const defaultSeasonKey = mapUserSeasonToKey(user?.personalColor || "")
   const [step, setStep] = useState(0) // 0=날씨, 1=퍼스널컬러, done=결과
   const total = 2
 
   const [weatherKey, setWeatherKey] = useState("")
-  const [seasonKey, setSeasonKey] = useState("")
+  const [seasonKey, setSeasonKey] = useState(defaultSeasonKey)
   const [done, setDone] = useState(false)
   const [combos, setCombos] = useState([])
   const [summary, setSummary] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-
-  // 수정: 컴포넌트 마운트 시 사용자 정보 확인/생성
-  useEffect(() => {
-    const currentUser = ensureUserHasNumericId();
-    setUser(currentUser);
-    setSeasonKey(mapUserSeasonToKey(currentUser?.personalColor || ""));
-  }, []);
 
   const progress = useMemo(
     () => Math.round((((weatherKey ? 1 : 0) + (seasonKey ? 1 : 0)) / total) * 100),
@@ -70,95 +61,23 @@ export default function RecommendWizardPage() {
   }
   const prev = () => setStep((s) => Math.max(0, s - 1))
 
-  const finalize = async () => {
-    // 수정: user?.userId 확인
-    if (!user?.userId) {
-      setError("사용자 정보를 찾을 수 없습니다. 페이지를 새로고침해 주세요.")
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      // 백엔드 API 호출
-      const backendWeather = mapWeatherKeyToBackend(weatherKey)
-      const personalColor = mapSeasonKeyToPersonalColor(seasonKey)
-
-      console.log('API 호출 파라미터:', { // 디버깅용 로그 추가
-        weather: backendWeather,
-        userId: user.userId,
-        personalColor: personalColor
-      });
-
-      const apiResponse = await getCodyRecommendationByWeather({
-        weather: backendWeather,
-        userId: user.userId,
-        personalColor: personalColor,
-        force: false
-      })
-
-      console.log('API 응답:', apiResponse); // 디버깅용 로그 추가
-
-      if (apiResponse.success && apiResponse.data && apiResponse.data.codys && apiResponse.data.codys.length > 0) {
-        // 백엔드 응답 성공
-        const transformedCombos = transformBackendResponse(apiResponse.data)
-        setCombos(transformedCombos)
-        setSummary({
-          description: `${weatherOptions.find(w => w.key === weatherKey)?.label} 날씨와 ${seasonKeys.find(s => s.key === seasonKey)?.label}에 어울리는`,
-          items: [...new Set(transformedCombos.flatMap(combo => combo.items))].slice(0, 5),
-          recommendedColors: [...new Set(transformedCombos.flatMap(combo => combo.colors))].slice(0, 8)
-        })
-      } else {
-        // 백엔드 실패시 로컬 엔진 사용
-        console.warn("백엔드 추천 실패, 로컬 엔진 사용:", apiResponse.error || "데이터 부족")
-        const localData = engine.getRecommendation(weatherKey, seasonKey)
-        const localCombos = engine.generateOutfitCombinations(weatherKey, seasonKey)
-        setSummary(localData)
-        setCombos(localCombos)
+    const finalize = () => {
+      const data = engine.getRecommendation(weatherKey, seasonKey)
+      const c = engine.generateOutfitCombinations(weatherKey, seasonKey)
+      setSummary(data)
+      setCombos(c)
+      setDone(true)
       }
-
-      setDone(true)
-    } catch (err) {
-      console.error("추천 처리 중 오류:", err)
-      // 오류 발생시 로컬 엔진으로 폴백
-      const localData = engine.getRecommendation(weatherKey, seasonKey)
-      const localCombos = engine.generateOutfitCombinations(weatherKey, seasonKey)
-      setSummary(localData)
-      setCombos(localCombos)
-      setDone(true)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const resetAll = () => {
     setStep(0)
     setWeatherKey("")
-    setSeasonKey(mapUserSeasonToKey(user?.personalColor || ""))
+    setSeasonKey(defaultSeasonKey)
     setDone(false)
     setCombos([])
     setSummary(null)
-    setError(null)
-    setLoading(false)
   }
 
-  // 수정: user가 로딩 중일 때 처리
-  if (!user) {
-    return (
-      <main className="min-h-screen bg-white dark:bg-neutral-900">
-        <Header />
-        <section className="mx-auto max-w-6xl px-4 py-10">
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-[#0B64FE]" />
-            <span className="ml-2 text-neutral-600 dark:text-neutral-300">로딩 중...</span>
-          </div>
-        </section>
-      </main>
-    )
-  }
-
-  // 나머지 컴포넌트는 동일...
   const StepWeather = () => (
     <div className="grid gap-4">
       <Label className="text-sm font-medium text-neutral-800 dark:text-neutral-200">오늘 날씨는 어떤가요?</Label>
@@ -229,12 +148,6 @@ export default function RecommendWizardPage() {
         </div>
       </CardHeader>
       <CardContent className="grid gap-6">
-        {error && (
-          <div className="flex items-center gap-2 p-3 rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-            <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
-          </div>
-        )}
 
         {step === 0 ? <StepWeather /> : <StepSeason />}
 
@@ -242,38 +155,21 @@ export default function RecommendWizardPage() {
           <Button
             variant="outline"
             onClick={prev}
-            disabled={step === 0 || loading}
+            disabled={step === 0}
             className="border-neutral-300 dark:border-neutral-700 bg-transparent"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             이전
           </Button>
           {step < total - 1 ? (
-            <Button
-              onClick={next}
-              disabled={!weatherKey || loading}
-              className="bg-[#0B64FE] text-white hover:bg-[#0956da]"
-            >
+          <Button onClick={next} disabled={!weatherKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
               다음
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <Button
-              onClick={finalize}
-              disabled={!seasonKey || loading}
-              className="bg-[#0B64FE] text-white hover:bg-[#0956da]"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  추천 중...
-                </>
-              ) : (
-                <>
-                  결과 보기
-                  <CheckCircle2 className="h-4 w-4 ml-1" />
-                </>
-              )}
+          <Button onClick={finalize} disabled={!seasonKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
+                        결과 보기
+                        <CheckCircle2 className="h-4 w-4 ml-1" />
             </Button>
           )}
         </div>
@@ -306,9 +202,9 @@ export default function RecommendWizardPage() {
             <div>
               <div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-2">추천 색상</div>
               <div className="flex flex-wrap gap-2">
-                {summary.recommendedColors.map((c, idx) => (
+                {summary.recommendedColors.map((c) => (
                   <span
-                    key={`${c}-${idx}`}
+                    key={c}
                     className="px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 text-sm"
                   >
                     {c}
@@ -320,9 +216,9 @@ export default function RecommendWizardPage() {
             <div>
               <div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-2">코디 조합</div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {combos.map((combo, idx) => (
+                {combos.map((combo) => (
                   <Card
-                    key={combo.codyId || `${combo.name}-${idx}`}
+                    key={combo.name}
                     className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
                   >
                     <CardContent className="pt-4">
@@ -333,11 +229,6 @@ export default function RecommendWizardPage() {
                       <div className="text-xs text-neutral-600 dark:text-neutral-300 mt-2">
                         컬러: {combo.colors.join(", ")}
                       </div>
-                      {combo.codyId && (
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                          코디 ID: {combo.codyId}
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 ))}
