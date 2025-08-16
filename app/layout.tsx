@@ -1,7 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_KR } from "next/font/google";
-import "./globals.css";
+import "../styles/globals.css";
 import { ThemeProvider as NextThemesProvider } from "next-themes"; // 직접 사용
 
 const inter = Inter({
