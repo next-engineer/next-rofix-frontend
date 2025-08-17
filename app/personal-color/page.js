@@ -1,3 +1,5 @@
+// 퍼스널컬러 (배경만 변경: bg-white → bg-[#F2F2F2])
+
 "use client"
 
 import Header from "@/components/header"
@@ -166,7 +168,7 @@ export default function PersonalColorWizardPage() {
   )
 
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-900">
+    <main className="min-h-screen bg-[#F2F2F2] dark:bg-neutral-900">
       <Header />
       <section className="mx-auto max-w-4xl px-4 py-10">{!done ? <QuizView /> : <ResultView />}</section>
     </main>

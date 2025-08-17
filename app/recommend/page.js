@@ -1,3 +1,5 @@
+// 추천받기 (배경만 변경: bg-white → bg-[#F2F2F2])
+
 "use client"
 
 import Header from "@/components/header"
@@ -61,13 +63,13 @@ export default function RecommendWizardPage() {
   }
   const prev = () => setStep((s) => Math.max(0, s - 1))
 
-    const finalize = () => {
-      const data = engine.getRecommendation(weatherKey, seasonKey)
-      const c = engine.generateOutfitCombinations(weatherKey, seasonKey)
-      setSummary(data)
-      setCombos(c)
-      setDone(true)
-      }
+  const finalize = () => {
+    const data = engine.getRecommendation(weatherKey, seasonKey)
+    const c = engine.generateOutfitCombinations(weatherKey, seasonKey)
+    setSummary(data)
+    setCombos(c)
+    setDone(true)
+  }
 
   const resetAll = () => {
     setStep(0)
@@ -162,14 +164,14 @@ export default function RecommendWizardPage() {
             이전
           </Button>
           {step < total - 1 ? (
-          <Button onClick={next} disabled={!weatherKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
+            <Button onClick={next} disabled={!weatherKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
               다음
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-          <Button onClick={finalize} disabled={!seasonKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
-                        결과 보기
-                        <CheckCircle2 className="h-4 w-4 ml-1" />
+            <Button onClick={finalize} disabled={!seasonKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
+              결과 보기
+              <CheckCircle2 className="h-4 w-4 ml-1" />
             </Button>
           )}
         </div>
@@ -252,7 +254,7 @@ export default function RecommendWizardPage() {
   )
 
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-900">
+    <main className="min-h-screen bg-[#F2F2F2] dark:bg-neutral-900">
       <Header />
       <section className="mx-auto max-w-6xl px-4 py-10">{!done ? <QuizCard /> : <ResultCard />}</section>
     </main>
