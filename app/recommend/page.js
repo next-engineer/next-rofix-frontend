@@ -49,6 +49,7 @@ export default function RecommendWizardPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [useApi, setUseApi] = useState(true) // API 우선 사용
+  const [progress, setProgress] = useState(0) // 초기 progress 값을 0으로 설정
 
   // 옷장 데이터 로드
   useEffect(() => {
@@ -267,7 +268,7 @@ export default function RecommendWizardPage() {
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={finalize} disabled={!seasonKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
+            <Button onClick={next} disabled={!seasonKey} className="bg-[#0B64FE] text-white hover:bg-[#0956da]">
               결과 보기
               <CheckCircle2 className="h-4 w-4 ml-1" />
             </Button>
@@ -339,10 +340,11 @@ export default function RecommendWizardPage() {
     </Card>
   )
 
-  const progress = useMemo(
-    () => Math.round((((weatherKey ? 1 : 0) + (seasonKey ? 1 : 0)) / total) * 100),
-    [weatherKey, seasonKey],
-  )
+  // progress 값을 클라이언트 사이드에서만 계산하도록 useEffect 사용
+  useEffect(() => {
+    const calculatedProgress = Math.round((((weatherKey ? 1 : 0) + (seasonKey ? 1 : 0)) / total) * 100);
+    setProgress(calculatedProgress);
+  }, [weatherKey, seasonKey, total]);
 
   if (done) {
     return (
