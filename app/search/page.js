@@ -62,16 +62,14 @@ const demoFeed = [
   },
 ];
 
-/* ========= 댓글 섹션 (로컬스토리지: 등록/삭제/표시) ========= */
+/* ========= 댓글 섹션 ========= */
 function CommentSection({ itemId, seed = [] }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
 
-  // 첫 로드시 로컬스토리지에서 불러오고, 비어있으면 seed로 초기화
   useEffect(() => {
     const loaded = getComments(itemId);
     if (loaded.length === 0 && seed.length > 0) {
-      // 원래 순서 유지 위해 앞에서부터 추가
       seed.forEach((s) => addComment(itemId, s));
       setComments(getComments(itemId));
     } else {
@@ -129,7 +127,7 @@ function CommentSection({ itemId, seed = [] }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && onAdd()}
-          className="bg-white dark:bg-neutral-800"
+          className="bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-400"
         />
         <Button onClick={onAdd} className="h-9">
           등록
@@ -141,12 +139,10 @@ function CommentSection({ itemId, seed = [] }) {
 
 /* ===================== 메인 페이지 ===================== */
 export default function SearchPage() {
-  // 컨트롤 상태
-  const [category, setCategory] = useState("");     // ""는 placeholder 유지용
-  const [order, setOrder] = useState("latest");     // latest | likes
+  const [category, setCategory] = useState(""); // ""는 placeholder 유지용
+  const [order, setOrder] = useState("latest"); // latest | likes
   const [query, setQuery] = useState("");
 
-  // 백엔드 연동 상태
   const [codies, setCodies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -160,9 +156,9 @@ export default function SearchPage() {
     try {
       const searchParams = {
         searchText: query.trim(),
-        searchScope: "both", // 제목과 설명 모두 검색
+        searchScope: "both",
         weather: category && category !== "all" ? category : "",
-        sortBy: order === "likes" ? "likes" : "latest"
+        sortBy: order === "likes" ? "likes" : "latest",
       };
 
       const results = await searchCodies(searchParams);
@@ -174,27 +170,21 @@ export default function SearchPage() {
     } catch (err) {
       const errorMessage = handleApiError(err);
       setError(errorMessage);
-      console.error('검색 실패:', err);
+      console.error("검색 실패:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // 엔터키로 검색
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      doSearch();
-    }
+    if (e.key === "Enter") doSearch();
   };
 
-  // 좋아요 기능 (로컬 상태만 업데이트 - 실제 백엔드 API 필요시 추가)
   const like = (codyId) => {
     setCodies((prev) =>
       prev.map((cody) =>
-        cody.codyId === codyId
-          ? { ...cody, likeCount: cody.likeCount + 1 }
-          : cody
-      )
+        cody.codyId === codyId ? { ...cody, likeCount: cody.likeCount + 1 } : cody,
+      ),
     );
   };
 
@@ -202,50 +192,59 @@ export default function SearchPage() {
     <main className="min-h-screen bg-[#F2F2F2] dark:bg-neutral-900">
       <Header />
       <section className="mx-auto max-w-6xl px-4 py-10">
-        <h2 className="text-2xl font-bold text-black dark:text-white mb-6">
-          코디 검색
-        </h2>
+        <h2 className="text-2xl font-bold text-black dark:text-white mb-6">코디 검색</h2>
 
         {/* 상단 컨트롤 바 */}
         <div className="mb-6 flex items-center gap-2">
+          {/* 카테고리 */}
           <Select value={category || undefined} onValueChange={setCategory}>
-            <SelectTrigger className="w-36 bg-white dark:bg-neutral-800">
+            <SelectTrigger
+              className="w-36 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 data-[state=open]:bg-white dark:data-[state=open]:bg-neutral-800"
+            >
               <SelectValue placeholder="카테고리" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700">
               {categories.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
+                <SelectItem
+                  key={cat.value}
+                  value={cat.value}
+                  className="focus:bg-neutral-100 dark:focus:bg-neutral-700 dark:text-neutral-100"
+                >
                   {cat.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
+          {/* 검색어 */}
           <Input
             placeholder="검색할 텍스트를 입력해 주세요."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyPress}
-            className="bg-white dark:bg-neutral-800 flex-1"
+            className="bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-400 flex-1"
             disabled={loading}
           />
 
+          {/* 정렬 */}
           <Select value={order} onValueChange={setOrder}>
-            <SelectTrigger className="w-32 bg-white dark:bg-neutral-800">
+            <SelectTrigger
+              className="w-32 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 data-[state=open]:bg-white dark:data-[state=open]:bg-neutral-800"
+            >
               <SelectValue placeholder="정렬" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="latest">최신순</SelectItem>
-              <SelectItem value="likes">가나다순</SelectItem>
+            <SelectContent className="bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700">
+              <SelectItem value="latest" className="focus:bg-neutral-100 dark:focus:bg-neutral-700 dark:text-neutral-100">
+                최신순
+              </SelectItem>
+              <SelectItem value="likes" className="focus:bg-neutral-100 dark:focus:bg-neutral-700 dark:text-neutral-100">
+                가나다순
+              </SelectItem>
             </SelectContent>
           </Select>
 
           <Button onClick={doSearch} className="h-9 px-3" disabled={loading}>
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <SearchIcon className="w-4 h-4" />
-            )}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <SearchIcon className="w-4 h-4" />}
           </Button>
         </div>
 
@@ -260,27 +259,21 @@ export default function SearchPage() {
         {loading && (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-[#0B64FE]" />
-            <span className="ml-2 text-neutral-600 dark:text-neutral-300">
-              검색 중...
-            </span>
+            <span className="ml-2 text-neutral-600 dark:text-neutral-300">검색 중...</span>
           </div>
         )}
 
         {/* 검색 결과 없음 */}
         {!loading && hasSearched && codies.length === 0 && !error && (
           <div className="text-center py-12">
-            <p className="text-neutral-600 dark:text-neutral-300">
-              검색 조건에 맞는 코디가 없습니다.
-            </p>
+            <p className="text-neutral-600 dark:text-neutral-300">검색 조건에 맞는 코디가 없습니다.</p>
           </div>
         )}
 
         {/* 검색 안내 */}
         {!loading && !hasSearched && (
           <div className="text-center py-12">
-            <p className="text-neutral-600 dark:text-neutral-300">
-              키워드를 입력하고 검색해보세요.
-            </p>
+            <p className="text-neutral-600 dark:text-neutral-300">키워드를 입력하고 검색해보세요.</p>
           </div>
         )}
 
@@ -292,15 +285,12 @@ export default function SearchPage() {
               className="bg-white dark:bg-neutral-800 border-black/10 dark:border-white/10"
             >
               <CardHeader>
-                <CardTitle className="text-black dark:text-white">
-                  {cody.title}
-                </CardTitle>
+                <CardTitle className="text-black dark:text-white">{cody.title}</CardTitle>
                 <CardDescription className="text-neutral-600 dark:text-neutral-300">
                   {cody.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* 코디 이미지 또는 포함된 옷들 이미지 */}
                 <div className="w-full h-52 rounded-md overflow-hidden border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-700">
                   {cody.clothings && cody.clothings.length > 0 ? (
                     <div className="grid grid-cols-2 gap-1 h-full p-2">
@@ -315,13 +305,10 @@ export default function SearchPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-neutral-400">
-                      이미지 없음
-                    </div>
+                    <div className="flex items-center justify-center h-full text-neutral-400">이미지 없음</div>
                   )}
                 </div>
 
-                {/* 포함된 옷들 정보 */}
                 {cody.clothings && cody.clothings.length > 0 && (
                   <div className="mt-3">
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
@@ -337,29 +324,20 @@ export default function SearchPage() {
                         </span>
                       ))}
                       {cody.clothings.length > 3 && (
-                        <span className="text-xs text-neutral-500">
-                          +{cody.clothings.length - 3}개
-                        </span>
+                        <span className="text-xs text-neutral-500">+{cody.clothings.length - 3}개</span>
                       )}
                     </div>
                   </div>
                 )}
 
                 <div className="mt-3 flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => like(cody.codyId)}
-                    className="h-9"
-                  >
+                  <Button variant="outline" onClick={() => like(cody.codyId)} className="h-9">
                     <Heart className="h-4 w-4 mr-1 text-[#0B64FE]" />
                     좋아요 {cody.likeCount || 0}
                   </Button>
-                  <span className="text-xs text-neutral-500">
-                    댓글 {cody.commentCount || 0}개
-                  </span>
+                  <span className="text-xs text-neutral-500">댓글 {cody.commentCount || 0}개</span>
                 </div>
 
-                {/* 댓글 섹션 */}
                 <CommentSection itemId={`cody-${cody.codyId}`} seed={[]} />
               </CardContent>
             </Card>
