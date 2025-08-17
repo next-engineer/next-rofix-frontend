@@ -14,7 +14,7 @@ const useAuth = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axiosInstance.get("/auth/check");
+        const res = await axiosInstance.get("/api/auth/check");
         setUser(res.data.user);
       } catch (error) {
         // 이 catch는 401 에러가 아닌, 네트워크 오류 등
@@ -33,7 +33,7 @@ const useAuth = () => {
   const login = async (email) => {
     setIsLoading(true);
     try {
-      const res = await axiosInstance.post("/auth/login", { email });
+      const res = await axiosInstance.post("/api/auth/login", { email });
       setUser(res.data.user);
       router.push("/mypage");
     } catch (error) {
@@ -51,7 +51,7 @@ const useAuth = () => {
   // 로그아웃 함수
   const logout = async () => {
     try {
-      await axiosInstance.post("/auth/logout");
+      await axiosInstance.post("/api/auth/logout");
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
@@ -61,7 +61,7 @@ const useAuth = () => {
 
   const deleteAccount = async () => {
     try {
-      await axiosInstance.delete("/users"); // 회원 탈퇴 API 호출
+      await axiosInstance.delete("/api/users"); // 회원 탈퇴 API 호출
       await logout(); // 로그아웃 처리
       return true;
     } catch (error) {
