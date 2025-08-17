@@ -38,9 +38,45 @@ const PC_EMOJI = {
   "가을 웜": "🍂",
   "겨울 쿨": "❄️",
 };
+
 const withEmoji = (label) => {
   const l = normalizePC(label || "");
   return l ? `${PC_EMOJI[l] ?? ""} ${l}`.trim() : "";
+};
+
+const colors = [
+  { value: "black", label: "블랙" },
+  { value: "white", label: "화이트" },
+  { value: "gray", label: "그레이" },
+  { value: "navy", label: "네이비" },
+  { value: "brown", label: "브라운" },
+  { value: "beige", label: "베이지" },
+  { value: "red", label: "레드" },
+  { value: "blue", label: "블루" },
+  { value: "green", label: "그린" },
+  { value: "yellow", label: "옐로우" },
+  { value: "pink", label: "핑크" },
+  { value: "purple", label: "퍼플" },
+];
+
+const weathers = [
+  { key: "hot", label: "더움", emoji: "🔥" },
+  { key: "cold", label: "추움", emoji: "❄️" },
+  { key: "sunny", label: "맑음", emoji: "☀️" },
+  { key: "cloudy", label: "흐림", emoji: "☁️" },
+  { key: "rainy", label: "비", emoji: "🌧️" },
+];
+
+function fallbackImageFor() {
+  return "/images/outfit-casual.png";
+}
+
+const getColorLabel = (value) =>
+  colors.find((c) => c.value === value)?.label || value;
+
+const getWeatherLabel = (key) => {
+  const w = weathers.find((w) => w.key === key);
+  return w ? `${w.label} ${w.emoji}` : key;
 };
 
 export default function MyPage() {
@@ -258,7 +294,7 @@ export default function MyPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-black dark:text-white">
-                  내 코디
+                  내 옷장
                 </CardTitle>
                 <CardDescription
                   className="text-neutral-600 dark:text-neutral-300"
@@ -283,35 +319,29 @@ export default function MyPage() {
                 </div>
               ) : wardrobe.length === 0 ? (
                 <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                  등록된 옷이 없습니다. <b>옷 등록하기</b> 버튼을 눌러 추가해
-                  주세요.
+                  등록된 옷이 없습니다.
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {wardrobe.map((i) => (
                     <Card
-                      key={i.id}
+                      key={i.clothingId}
                       className="bg-white dark:bg-neutral-800 border-black/10 dark:border-white/10"
                     >
                       <CardContent className="pt-4">
                         <div className="w-full h-40 rounded-md border border-black/5 dark:border-white/10 bg-white/70 dark:bg-neutral-700 flex items-center justify-center text-neutral-400 dark:text-neutral-300 overflow-hidden">
-                          {i.image ? (
-                            <img
-                              src={i.image || "/placeholder.svg"}
-                              alt={i.title || "item"}
-                              className="w-full h-40 object-cover rounded-md"
-                            />
-                          ) : (
-                            "이미지"
-                          )}
+                          <img
+                            src={i.imageUrl || "/images/outfit-casual.png"} // imageUrl로 변경
+                            alt={i.title || "item"}
+                            className="w-full h-40 object-cover rounded-md"
+                          />
                         </div>
                         <div className="mt-2 font-semibold text-black dark:text-white">
                           {i.title || "이름 없음"}
                         </div>
                         <div className="text-sm text-neutral-600 dark:text-neutral-300">
-                          {[i.category, i.color, i.weather]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          {i.category} · {getColorLabel(i.color)} ·{" "}
+                          {getWeatherLabel(i.weather)}
                         </div>
                       </CardContent>
                     </Card>
