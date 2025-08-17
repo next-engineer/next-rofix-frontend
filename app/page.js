@@ -111,9 +111,12 @@ function BrandHero({
               코디를 발견하세요
             </h2>
 
+            {/* ⬇️ 이 문단만 수정: Team 과 Rofix 사이 공백 고정 */}
             <p className="mt-6 text-base md:text-[17px] leading-7 text-neutral-700 dark:text-neutral-300">
               FitSpot은 당신의 고유한 컬러와 현재 날씨를 기반으로 코디를 개인화해 추천합니다.
-              로그인 후 나만의 스타일 여정을 시작해 보세요.
+              로그인 후 나만의 스타일 여정을 시작해 보세요.{" "}
+              <strong>Team&nbsp;Rofix</strong>와 함께 옷장을 가볍게
+              스타일은 더욱 세련되게 업그레이드해 보세요.
             </p>
 
             {cta && (
