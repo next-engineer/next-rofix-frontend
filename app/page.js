@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Thermometer, Palette, Search, Shirt } from "lucide-react";
 
+/* 공용 패널 톤: 흰색 카드 + 은은한 테두리(다른 페이지와 동일) */
+const panelCard =
+  "rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-sm";
+
 /* ====== Footer ====== */
 function LiteFooter() {
   return (
@@ -50,9 +54,8 @@ function FeatureCard({
   return (
     <Link href={href} className="block group">
       <Card
-        className="h-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800
-                   shadow-sm transition-all rounded-2xl
-                   motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-lg"
+        className={`${panelCard} h-full transition-all
+                    motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:shadow-lg`}
       >
         <div className="flex flex-col items-center text-center px-8 py-8">
           <div
@@ -150,7 +153,8 @@ export default function HomePage() {
   const brandWrapRef = useRef(null);
 
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-900 flex flex-col">
+    /* ✅ 페이지 배경을 neutral-50로 통일 */
+    <main className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex flex-col">
       <Header />
 
       <section className="mx-auto max-w-6xl px-4 py-12 flex-1">

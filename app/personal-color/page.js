@@ -13,6 +13,10 @@ import Link from "next/link"
 
 const seasonLabel = { spring: "봄 웜", summer: "여름 쿨", autumn: "가을 웜", winter: "겨울 쿨" }
 
+// ✅ 카드(흰색) 톤 — 검색 페이지와 동일
+const panelCard =
+  "rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 shadow-sm"
+
 export default function PersonalColorWizardPage() {
   const analyzerRef = useRef(new PersonalColorAnalyzer())
   const analyzer = analyzerRef.current
@@ -25,14 +29,8 @@ export default function PersonalColorWizardPage() {
   const current = analyzer.questions[step]
   const progress = Math.round((Object.keys(answers).length / total) * 100)
 
-  const choose = (val) => {
-    setAnswers((p) => ({ ...p, [current.id]: val }))
-  }
-
-  const next = () => {
-    if (step < total - 1) setStep((s) => s + 1)
-    else finalize()
-  }
+  const choose = (val) => setAnswers((p) => ({ ...p, [current.id]: val }))
+  const next = () => (step < total - 1 ? setStep((s) => s + 1) : finalize())
   const prev = () => setStep((s) => Math.max(0, s - 1))
 
   const finalize = () => {
@@ -46,7 +44,7 @@ export default function PersonalColorWizardPage() {
   const save = () => result && setUserPersonalColor(seasonLabel[result])
 
   const QuizView = () => (
-    <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+    <Card className={panelCard}>
       <CardHeader className="pb-3">
         <CardTitle className="text-neutral-900 dark:text-white">퍼스널 컬러 진단</CardTitle>
         <CardDescription className="text-neutral-600 dark:text-neutral-300">
@@ -71,7 +69,7 @@ export default function PersonalColorWizardPage() {
                 className={`flex items-center gap-2 rounded-md border px-3 py-2 transition ${
                   answers[current.id] === op.value
                     ? "border-[#0B64FE] bg-[#0B64FE]/5 dark:bg-[#0B64FE]/10"
-                    : "border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800/80"
+                    : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800/80"
                 }`}
               >
                 <RadioGroupItem value={op.value} id={`${current.id}-${op.value}`} />
@@ -110,7 +108,7 @@ export default function PersonalColorWizardPage() {
   )
 
   const ResultView = () => (
-    <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+    <Card className={panelCard}>
       <CardHeader>
         <CardTitle className="text-neutral-900 dark:text-white flex items-center gap-2">
           <CheckCircle2 className="h-5 w-5 text-[#0B64FE]" />
@@ -166,7 +164,8 @@ export default function PersonalColorWizardPage() {
   )
 
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-900">
+    // ✅ 페이지 배경: 검색과 동일(#F2F2F2)
+    <main className="min-h-screen bg-[#F2F2F2] dark:bg-neutral-900">
       <Header />
       <section className="mx-auto max-w-4xl px-4 py-10">{!done ? <QuizView /> : <ResultView />}</section>
     </main>
